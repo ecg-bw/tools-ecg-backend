@@ -28,6 +28,7 @@ jobs:
           echo "Tests completed."
 
   build:
+    needs: test
     runs-on: ubuntu-latest
     outputs:
       stage: ${{ steps.set-stage.outputs.stage }}
