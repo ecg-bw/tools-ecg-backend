@@ -21,6 +21,8 @@ services:
       - "traefik.http.routers.backend-${STAGE}.entrypoints=websecure"
       - "traefik.http.routers.backend-${STAGE}.tls.certresolver=myresolver"
       - "traefik.http.services.backend-${STAGE}.loadbalancer.server.port=8080"
+
+      - "traefik.http.routers.backend-${STAGE}.priority=20"
       
       # Optional: Falls dein Go-Code die Routen ohne "/api" definiert hat, 
       # schneidet diese Middleware das Präfix "/api" vor Weiterleitung an Go ab:

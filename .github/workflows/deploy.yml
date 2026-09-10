@@ -122,6 +122,6 @@ jobs:
             echo "Erstellte .env (ohne Passwörter):"
             grep -v "DB_PASSWORD" .env
             
-            docker compose -f docker-compose.app.yml -p "app-${{ needs.build.outputs.stage }}" pull
-            docker compose -f docker-compose.app.yml -p "app-${{ needs.build.outputs.stage }}" up -d --force-recreate --remove-orphans
+            docker compose -f docker-compose.app.yml -p "backend-${{ needs.build.outputs.stage }}" pull
+            docker compose -f docker-compose.app.yml -p "backend-${{ needs.build.outputs.stage }}" up -d --force-recreate --remove-orphans
             docker image prune -af --filter "until=24h"
