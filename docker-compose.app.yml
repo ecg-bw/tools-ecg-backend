@@ -1,0 +1,33 @@
+services:
+  backend:
+    image: ${DOCKER_IMAGE}:${IMAGE_TAG}
+    container_name: backend-${STAGE}
+    restart: always
+    environment:
+      - STAGE=${STAGE}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=app_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=app_${STAGE}
+    networks:
+      - web-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web-network"
+
+      # Router für Backend (greift bei /api)
+      - "traefik.http.routers.backend-${STAGE}.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-${STAGE}.entrypoints=websecure"
+      - "traefik.http.routers.backend-${STAGE}.tls.certresolver=myresolver"
+      - "traefik.http.services.backend-${STAGE}.loadbalancer.server.port=8080"
+      
+      # Optional: Falls dein Go-Code die Routen ohne "/api" definiert hat, 
+      # schneidet diese Middleware das Präfix "/api" vor Weiterleitung an Go ab:
+      - "traefik.http.middlewares.strip-api-${STAGE}.stripprefix.prefixes=/api"
+      - "traefik.http.routers.backend-${STAGE}.middlewares=strip-api-${STAGE}"
+    mem_limit: 60m
+
+networks:
+  web-network:
+    external: true
