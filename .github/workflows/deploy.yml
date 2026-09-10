@@ -91,7 +91,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           source: "docker-compose.app.yml"
-          target: "/opt/app/${{ needs.build.outputs.stage }}"
+          target: "/opt/app/backend/${{ needs.build.outputs.stage }}"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -104,8 +104,8 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           envs: APP_DOMAIN
           script: |
-            mkdir -p /opt/app/${{ needs.build.outputs.stage }}
-            cd /opt/app/${{ needs.build.outputs.stage }}
+            mkdir -p /opt/app/backend/${{ needs.build.outputs.stage }}
+            cd /opt/app/backend/${{ needs.build.outputs.stage }}
             
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             
