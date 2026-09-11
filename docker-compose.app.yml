@@ -16,18 +16,11 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=web-network"
 
-      # Router für Backend (greift bei /api)
-      - "traefik.http.routers.backend-${STAGE}.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      # Neue Router-Regel: Horcht auf api.${DOMAIN}
+      - "traefik.http.routers.backend-${STAGE}.rule=Host(`api.${DOMAIN}`)"
       - "traefik.http.routers.backend-${STAGE}.entrypoints=websecure"
       - "traefik.http.routers.backend-${STAGE}.tls.certresolver=myresolver"
       - "traefik.http.services.backend-${STAGE}.loadbalancer.server.port=8080"
-
-      - "traefik.http.routers.backend-${STAGE}.priority=20"
-      
-      # Optional: Falls dein Go-Code die Routen ohne "/api" definiert hat, 
-      # schneidet diese Middleware das Präfix "/api" vor Weiterleitung an Go ab:
-      - "traefik.http.middlewares.strip-api-${STAGE}.stripprefix.prefixes=/api"
-      - "traefik.http.routers.backend-${STAGE}.middlewares=strip-api-${STAGE}"
     mem_limit: 60m
 
 networks:
