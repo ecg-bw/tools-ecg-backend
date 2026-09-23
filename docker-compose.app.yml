@@ -7,9 +7,9 @@ services:
       - STAGE=${STAGE}
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USER=app_user
+      - DB_USER=user_${STAGE}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=app_${STAGE}
+      - DB_NAME=db_${STAGE}
     networks:
       - web-network
     labels:
