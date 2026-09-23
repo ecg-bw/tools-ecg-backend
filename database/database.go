@@ -19,7 +19,7 @@ func RunMigrations(db *sql.DB) error {
 		return fmt.Errorf("could not create postgres driver: %w", err)
 	}
 
-	sourceDriver, err := iofs.New(migrationFiles, "../../migrations")
+	sourceDriver, err := iofs.New(migrationFiles, "migrations")
 	if err != nil {
 		return fmt.Errorf("could not create iofs driver: %w", err)
 	}
