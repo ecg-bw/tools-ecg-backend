@@ -64,6 +64,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment: ${{ needs.build.outputs.stage }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -115,13 +116,19 @@ jobs:
             IMAGE_TAG=${{ needs.build.outputs.stage }}-${{ github.sha }}
             STAGE=${{ needs.build.outputs.stage }}
             DOMAIN=$APP_DOMAIN
+            DB_HOST=postgres
+            DB_PORT=5432
+            DB_USER=user_${{ needs.build.outputs.stage }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_NAME=db_${{ needs.build.outputs.stage }}
             EOF
             
             # Kontrolle in den GitHub-Logs:
             echo "Erstellte .env (ohne Passwörter):"
             grep -v "DB_PASSWORD" .env
             
+            docker rm -f backend-${{ needs.build.outputs.stage }} || true
+
             docker compose -f docker-compose.app.yml -p "backend-${{ needs.build.outputs.stage }}" pull
             docker compose -f docker-compose.app.yml -p "backend-${{ needs.build.outputs.stage }}" up -d --force-recreate --remove-orphans
             docker image prune -af --filter "until=24h"
