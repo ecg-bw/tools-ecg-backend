@@ -5,21 +5,52 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"fmt"
+	"time"
 
 	_ "github.com/lib/pq"
 	"tools-ecg-backend/database"
 	"tools-ecg-backend/handlers"
 )
 
-func main() {
-	dbConnStr := os.Getenv("DATABASE_URL")
-	if dbConnStr == "" {
-		dbConnStr = "postgres://postgres:postgres@localhost:5432/standplan?sslmode=disable"
+func getEnv(key, fallback string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return fallback
+}
+
+func initDB() (*sql.DB, error) {
+	host := getEnv("DB_HOST", "postgres")
+	port := getEnv("DB_PORT", "5432")
+	user := getEnv("DB_USER", "user_dev")
+	pass := getEnv("DB_PASSWORD", "")
+	dbname := getEnv("DB_NAME", "db_dev")
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable connect_timeout=5",
+		host, port, user, pass, dbname,
+	)
+
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("sql.Open fehler: %w", err)
 	}
 
-	db, err := sql.Open("postgres", dbConnStr)
+	db.SetMaxOpenConns(5)
+	db.SetMaxIdleConns(2)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("db.Ping fehler: %w", err)
+	}
+
+	return db, nil
+}
+
+func main() {
+	db, err := initDB()
 	if err != nil {
-		log.Fatalf("Datenbankverbindung fehlgeschlagen: %v", err)
+		log.Fatalf("Datenbankinitialisierung fehlgeschlagen: %v", err)
 	}
 	defer db.Close()
 
