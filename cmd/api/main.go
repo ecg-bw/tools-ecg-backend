@@ -2,30 +2,25 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"fmt"
 	"time"
 
 	_ "github.com/lib/pq"
-	"tools-ecg-backend/database"
-	"tools-ecg-backend/handlers"
+
+	"tools-ecg-backend/handler"
+	"tools-ecg-backend/repository"
+	"tools-ecg-backend/service"
 )
 
-func getEnv(key, fallback string) string {
-	if val := os.Getenv(key); val != "" {
-		return val
-	}
-	return fallback
-}
-
 func initDB() (*sql.DB, error) {
-	host := getEnv("DB_HOST", "postgres")
-	port := getEnv("DB_PORT", "5432")
-	user := getEnv("DB_USER", "user_dev")
-	pass := getEnv("DB_PASSWORD", "")
-	dbname := getEnv("DB_NAME", "db_dev")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	user := os.Getenv("DB_USER")
+	pass := os.Getenv("DB_PASSWORD")
+	dbname := os.Getenv("DB_NAME")
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable connect_timeout=5",
 		host, port, user, pass, dbname,
@@ -50,35 +45,71 @@ func initDB() (*sql.DB, error) {
 func main() {
 	db, err := initDB()
 	if err != nil {
-		log.Fatalf("Datenbankinitialisierung fehlgeschlagen: %v", err)
+		log.Fatalf("Fehler beim Öffnen der DB: %v", err)
 	}
 	defer db.Close()
 
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Datenbank nicht erreichbar: %v", err)
 	}
+	log.Println("Erfolgreich mit PostgreSQL verbunden.")
 
-	// 1. Migrationen beim Start ausführen
-	log.Println("Führe Datenbank-Migrationen aus...")
-	if err := database.RunMigrations(db); err != nil {
-		log.Fatalf("Migration fehlgeschlagen: %v", err)
-	}
-	log.Println("Migrationen erfolgreich abgeschlossen.")
+	// Repositories
+	editionRepo := repository.NewEditionRepository(db)
+	shiftRepo := repository.NewShiftRepository(db)
+	volunteerRepo := repository.NewVolunteerRepository(db)
 
-	// 2. HTTP Routing (Go 1.22+ Standard Mux)
+	// Services
+	editionService := service.NewEditionService(editionRepo)
+	shiftService := service.NewShiftService(shiftRepo)
+	volunteerService := service.NewVolunteerService(volunteerRepo)
+
+	// Handlers
+	editionHandler := handler.NewEditionHandler(editionService)
+	shiftHandler := handler.NewShiftHandler(shiftService)
+	volunteerHandler := handler.NewVolunteerHandler(volunteerService)
+
+	// Mux Router (Go 1.22+)
 	mux := http.NewServeMux()
-	standplanHandler := &handlers.StandplanHandler{DB: db}
 
-	mux.HandleFunc("GET /editions/{year}/standplan", standplanHandler.GetStandplan)
-	mux.HandleFunc("POST /shifts/{shiftId}/assignments", standplanHandler.AssignVolunteer)
+	// 1. Standplan & Bootstrap
+	mux.HandleFunc("GET /v1/editions/{year}/standplan", editionHandler.GetStandplan)
+	mux.HandleFunc("POST /v1/editions/{editionId}/bootstrap", editionHandler.Bootstrap)
+
+	// 2. Schichten verwalten
+	mux.HandleFunc("GET /v1/days/{dayId}/shifts", shiftHandler.GetShiftsByDay)
+	mux.HandleFunc("POST /v1/shifts", shiftHandler.CreateShift)
+	mux.HandleFunc("PUT /v1/shifts/{shiftId}", shiftHandler.UpdateShift)
+
+	// 3. Belegungen (Assignments)
+	mux.HandleFunc("POST /v1/shifts/{shiftId}/assignments", shiftHandler.AssignVolunteer)
+	mux.HandleFunc("DELETE /v1/shifts/{shiftId}/assignments/{assignmentId}", shiftHandler.RemoveAssignment)
+
+	// 4. Helfer & Persönlicher Plan
+	mux.HandleFunc("GET /v1/volunteers", volunteerHandler.List)
+	mux.HandleFunc("POST /v1/volunteers", volunteerHandler.Create)
+	mux.HandleFunc("GET /v1/volunteers/{volunteerId}/shifts", volunteerHandler.GetVolunteerShifts)
+
+	// Einfacher CORS-Wrapper
+	corsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		mux.ServeHTTP(w, r)
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	log.Printf("Server läuft auf Port %s...", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
-		log.Fatal(err)
+	fmt.Printf("Server läuft auf http://localhost:%s\n", port)
+	if err := http.ListenAndServe(":"+port, corsHandler); err != nil {
+		log.Fatalf("Server-Fehler: %v", err)
 	}
 }
