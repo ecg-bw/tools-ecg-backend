@@ -1,0 +1,7 @@
+# oapi-codegen.yaml
+package: api
+output: ../api/api.go
+generate:
+  - types       # Structs für Schemas/Payloads
+  - std-http    # Server-Interface und Handler für net/http (ServeMux)
+  - spec        # Eingebettete OpenAPI-Spec im generierten Code

@@ -58,7 +58,6 @@ CREATE TABLE IF NOT EXISTS shift_assignments (
     UNIQUE (shift_id, volunteer_id)
 );
 
--- Indexe für schnelle Lookups und Joins
 CREATE INDEX IF NOT EXISTS idx_weekends_edition_id ON weekends(edition_id);
 CREATE INDEX IF NOT EXISTS idx_market_days_weekend_id ON market_days(weekend_id);
 CREATE INDEX IF NOT EXISTS idx_shifts_day_id ON shifts(day_id);
