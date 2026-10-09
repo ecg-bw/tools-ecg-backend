@@ -38,9 +38,9 @@ func (a *ApiAdapter) CreateShiftAssignment(w http.ResponseWriter, r *http.Reques
 		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
 	}
 
-	assignment, err := a.StandplanService.CreateShiftAssignment(
+	assignmentId, err := a.StandplanService.CreateShiftAssignment(
 		models.ShiftAssignment{
-			Id:          shiftId,
+			ShiftId:     shiftId,
 			Name:        body.Name,
 			PhoneNumber: body.PhoneNumber,
 	})
@@ -49,7 +49,11 @@ func (a *ApiAdapter) CreateShiftAssignment(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	sendJSON(w, http.StatusOK, assignment)
+	response := api.CreateShiftAssignmentResponse{
+		Id: assignmentId,
+	}
+
+	sendJSON(w, http.StatusOK, response)
 }
 
 func (a *ApiAdapter) UpdateShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int) {

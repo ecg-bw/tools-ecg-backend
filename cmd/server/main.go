@@ -23,7 +23,7 @@ import (
 	"tools-ecg-backend/internal/api/handler"
 	"tools-ecg-backend/internal/config"
 	"tools-ecg-backend/internal/service"
-	"tools-ecg-backend/repository"
+	"tools-ecg-backend/internal/repository"
 )
 
 func initDB(config config.DatabaseConfig) (*sql.DB, error) {

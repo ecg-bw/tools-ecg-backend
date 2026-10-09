@@ -2,6 +2,7 @@ package models
 
 type ShiftAssignment struct {
 	Id          int
+	ShiftId     int
 	Name        string
 	PhoneNumber string
 }

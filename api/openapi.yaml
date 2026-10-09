@@ -44,7 +44,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ShiftAssignment'
+                $ref: '#/components/schemas/CreateShiftAssignmentResponse'
         '400':
           description: Ungültige Eingabe oder Schicht bereits voll.
 
@@ -231,6 +231,15 @@ components:
         phoneNumber:
           type: string
           example: "+491701234567"
+
+    CreateShiftAssignmentResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          example: 501
 
     ShiftAssignmentRequest:
       type: object
