@@ -1,0 +1,292 @@
+openapi: 3.0.3
+info:
+  title: Standplan & Waffelstand API
+  description: API zur Verwaltung von Schicht- und Standplänen sowie Waffel-Zählern.
+  version: 1.0.0
+
+paths:
+  /standplan:
+    get:
+      summary: Gesamten Standplan abrufen
+      description: Liefert alle Tage inklusive aller Schichten und deren Zuweisungen zurück.
+      operationId: getStandplan
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage des Standplans.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandplanResponse'
+
+  /standplan/shifts/{shiftId}/:
+    parameters:
+      - name: shiftId
+        in: path
+        required: true
+        description: Die Eindeutige ID der Schicht.
+        schema:
+          type: integer
+          example: 12
+
+    post:
+      summary: Schichtbelegung erstellen (wenn leer)
+      description: Weist einer freien Schicht eine Person zu.
+      operationId: createShiftAssignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftAssignmentRequest'
+      responses:
+        '200':
+          description: Schicht erfolgreich belegt.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftAssignment'
+        '400':
+          description: Ungültige Eingabe oder Schicht bereits voll.
+
+    put:
+      summary: Schichtbelegung aktualisieren
+      description: Aktualisiert die Daten einer bestehenden Schichtbelegung.
+      operationId: updateShiftAssignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShiftAssignmentRequest'
+      responses:
+        '200':
+          description: Schichtbelegung erfolgreich geändert.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftAssignment'
+
+    delete:
+      summary: Schichtbelegung löschen
+      description: Entfernt eine bestimmte Zuweisung/Anmeldung aus einer Schicht.
+      operationId: deleteShiftAssignment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteAssignmentRequest'
+      responses:
+        '200':
+          description: Zuweisung erfolgreich entfernt.
+        '404':
+          description: Zuweisung oder Schicht nicht gefunden.
+
+  /waffeln:
+    get:
+      summary: Gesamtanzahl der Waffeln abrufen
+      description: Gibt die Gesamtanzahl der bisher verkauften/gebackenen Waffeln zurück.
+      operationId: getWaffelnTotal
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage des Waffel-Zählers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaffelnTotalResponse'
+
+    post:
+      summary: Waffel-Zähler erhöhen/erstellen
+      description: Erhöht den Waffel-Zähler oder setzt diesen neu.
+      operationId: createWaffelEntry
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      responses:
+        '200':
+          description: Waffel-Zähler erfolgreich aktualisiert.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaffelnTotalResponse'
+
+    put:
+      summary: Waffel-Zähler aktualisieren
+      description: Aktualisiert den Waffel-Zählerstand.
+      operationId: updateWaffelEntry
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              example: {}
+      responses:
+        '200':
+          description: Waffel-Zähler erfolgreich geändert.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaffelnTotalResponse'
+
+  /standplan/files:
+    get:
+      summary: Dateien und Dokumente abrufen
+      description: Gibt eine Liste aller verfügbaren Dateien (z. B. Leitfäden, Pläne) zurück.
+      operationId: getStandplanFiles
+      responses:
+        '200':
+          description: Erfolgreiche Abfrage der Dateiliste.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilesResponse'
+
+components:
+  schemas:
+    StandplanResponse:
+      type: object
+      required:
+        - days
+      properties:
+        days:
+          type: array
+          items:
+            $ref: '#/components/schemas/Day'
+
+    Day:
+      type: object
+      required:
+        - id
+        - weekday
+        - date
+        - shifts
+      properties:
+        id:
+          type: integer
+          example: 1
+        weekday:
+          type: string
+          example: "Samstag"
+        date:
+          type: string
+          format: date
+          example: "2026-10-10"
+        shifts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Shift'
+
+    Shift:
+      type: object
+      required:
+        - id
+        - title
+        - startTime
+        - endTime
+        - required_slots
+        - description
+        - shift_assignments
+      properties:
+        id:
+          type: integer
+          example: 101
+        title:
+          type: string
+          example: "Frühschicht Waffelverkauf"
+        startTime:
+          type: string
+          example: "09:00"
+        endTime:
+          type: string
+          example: "12:00"
+        required_slots:
+          type: integer
+          example: 3
+        description:
+          type: string
+          example: "Waffeln backen und Teig nachfüllen"
+        shift_assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShiftAssignment'
+
+    ShiftAssignment:
+      type: object
+      required:
+        - id
+        - name
+        - phoneNumber
+      properties:
+        id:
+          type: integer
+          example: 501
+        name:
+          type: string
+          example: "Erika Mustermann"
+        phoneNumber:
+          type: string
+          example: "+491701234567"
+
+    ShiftAssignmentRequest:
+      type: object
+      required:
+        - name
+        - phoneNumber
+      properties:
+        name:
+          type: string
+          example: "Max Mustermann"
+        phoneNumber:
+          type: string
+          example: "+4915198765432"
+
+    DeleteAssignmentRequest:
+      type: object
+      required:
+        - assignmentId
+      properties:
+        assignmentId:
+          type: integer
+          example: 501
+
+    WaffelnTotalResponse:
+      type: object
+      required:
+        - waffelnTotal
+      properties:
+        waffelnTotal:
+          type: integer
+          example: 142
+
+    FileInfo:
+      type: object
+      required:
+        - title
+        - description
+        - url
+      properties:
+        title:
+          type: string
+          example: "Hygienekonzept 2026"
+        description:
+          type: string
+          example: "Wichtige Richtlinien für die Lebensmittelzubereitung"
+        url:
+          type: string
+          format: uri
+          example: "https://example.com/files/hygiene.pdf"
+
+    FilesResponse:
+      type: object
+      required:
+        - files
+      properties:
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileInfo'
