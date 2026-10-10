@@ -18,7 +18,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/StandplanResponse'
 
-  /standplan/shifts/{shiftId}/:
+  /standplan/shifts/{shiftId}/assignments:
     parameters:
       - name: shiftId
         in: path
@@ -48,6 +48,23 @@ paths:
         '400':
           description: Ungültige Eingabe oder Schicht bereits voll.
 
+  /standplan/shifts/{shiftId}/assignments/{assignmentId}:
+    parameters:
+      - name: shiftId
+        in: path
+        required: true
+        description: Die Eindeutige ID der Schicht.
+        schema:
+          type: integer
+          example: 12
+      - name: assignmentId
+        in: path
+        required: true
+        description: Die Eindeutige ID der Schichtbelegung.
+        schema:
+          type: integer
+          example: 12
+
     put:
       summary: Schichtbelegung aktualisieren
       description: Aktualisiert die Daten einer bestehenden Schichtbelegung.
@@ -61,26 +78,28 @@ paths:
       responses:
         '200':
           description: Schichtbelegung erfolgreich geändert.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ShiftAssignment'
 
     delete:
       summary: Schichtbelegung löschen
       description: Entfernt eine bestimmte Zuweisung/Anmeldung aus einer Schicht.
       operationId: deleteShiftAssignment
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeleteAssignmentRequest'
+        required: false
       responses:
         '200':
           description: Zuweisung erfolgreich entfernt.
         '404':
           description: Zuweisung oder Schicht nicht gefunden.
+
+  /standplan/shifts/{shiftId}/:
+    parameters:
+      - name: shiftId
+        in: path
+        required: true
+        description: Die Eindeutige ID der Schicht.
+        schema:
+          type: integer
+          example: 12
 
   /waffeln:
     get:
@@ -213,24 +232,7 @@ components:
         shift_assignments:
           type: array
           items:
-            $ref: '#/components/schemas/ShiftAssignment'
-
-    ShiftAssignment:
-      type: object
-      required:
-        - id
-        - name
-        - phoneNumber
-      properties:
-        id:
-          type: integer
-          example: 501
-        name:
-          type: string
-          example: "Erika Mustermann"
-        phoneNumber:
-          type: string
-          example: "+491701234567"
+            $ref: '#/components/schemas/ShiftAssignmentResponse'
 
     CreateShiftAssignmentResponse:
       type: object
@@ -247,6 +249,23 @@ components:
         - name
         - phoneNumber
       properties:
+        name:
+          type: string
+          example: "Max Mustermann"
+        phoneNumber:
+          type: string
+          example: "+4915198765432"
+
+    ShiftAssignmentResponse:
+      type: object
+      required:
+        - id
+        - name
+        - phoneNumber
+      properties:
+        id:
+          type: integer
+          example: 501
         name:
           type: string
           example: "Max Mustermann"

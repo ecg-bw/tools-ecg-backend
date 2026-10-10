@@ -12,6 +12,7 @@ type StandplanRepository interface {
 	GetAllDays() ([]models.Day, error)
 	GetAllShiftsByDayId(dayId int) ([]models.Shift, error)
 	GetAllAssignmentsByShiftId(shiftId int) ([]models.ShiftAssignment, error)
+	UpdateShiftAssignment(assignment models.ShiftAssignment) error
 }
 
 type StandplanService struct {
@@ -77,4 +78,13 @@ func (s *StandplanService) CreateShiftAssignment(assignment models.ShiftAssignme
 	// TODO: Check if phone number is valid
 
 	return s.StandplanRepo.CreateShiftAssignment(assignment)
+}
+
+func (s *StandplanService) UpdateShiftAssignment(assignment models.ShiftAssignment) error {
+	err := s.StandplanRepo.UpdateShiftAssignment(assignment)
+	if err != nil {
+		return err
+	}
+	
+	return nil
 }

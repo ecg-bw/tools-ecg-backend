@@ -20,6 +20,8 @@ func NewStandplanRepository(db *sql.DB) *StandplanRepository {
 const (
 	// Define any necessary SQL queries or constants here
 	createShiftAssignmentQuery = "INSERT INTO shift_assignments (shift_id, name, phone_number) VALUES ($1, $2, $3) RETURNING id"
+
+	updateShiftAssignemtQuery = "UPDATE shift_assignments SET name = $1, phone_number = $2 WHERE id = $3"
 	
 	getShiftByIdQuery = "SELECT * FROM shifts WHERE id = $1"
 
@@ -171,4 +173,12 @@ func (r *StandplanRepository) GetAllAssignmentsByShiftId(shiftId int) ([]models.
 		return nil, rows.Err()
 	}
 	return assignments, nil
+}
+
+func (r *StandplanRepository) UpdateShiftAssignment(assignment models.ShiftAssignment) error {
+	rows := r.DB.QueryRow(updateShiftAssignemtQuery, assignment.Name, assignment.PhoneNumber, assignment.Id)
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	return nil
 }

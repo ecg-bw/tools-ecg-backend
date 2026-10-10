@@ -63,7 +63,7 @@ func (a *ApiAdapter) GetStandplanFiles(w http.ResponseWriter, r *http.Request) {
 	w.Write(fmt.Appendf([]byte{}, "Get Standplan Files"))
 }
 
-func (a *ApiAdapter) DeleteShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int) {
+func (a *ApiAdapter) DeleteShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int, assignmentId int) {
 	w.Write(fmt.Appendf([]byte{}, "Delete Shift Assignment: %d", shiftId))
 }
 
@@ -92,8 +92,26 @@ func (a *ApiAdapter) CreateShiftAssignment(w http.ResponseWriter, r *http.Reques
 	sendJSON(w, http.StatusOK, response)
 }
 
-func (a *ApiAdapter) UpdateShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int) {
-	w.Write(fmt.Appendf([]byte{}, "Update Shift Assignment: %d", shiftId))
+func (a *ApiAdapter) UpdateShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int, assignmentId int) {
+	var body api.UpdateShiftAssignmentJSONRequestBody
+	err := decodeJSONBody(r, &body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
+	}
+
+	assignment := models.ShiftAssignment {
+		Id: assignmentId,
+		ShiftId: shiftId,
+		Name: body.Name,
+		PhoneNumber: body.PhoneNumber,
+	}
+
+	err = a.StandplanService.UpdateShiftAssignment(assignment)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to update shift assignment with id %d: %v", assignmentId, err), http.StatusBadRequest)
+	}
+
+	sendJSON(w, http.StatusOK, nil)
 }
 
 func (a *ApiAdapter) GetWaffelnTotal(w http.ResponseWriter, r *http.Request) {
@@ -148,8 +166,8 @@ func mapShiftToDTO(shift models.Shift) api.Shift {
 	return shiftDTO
 }
 
-func mapShiftAssignmentToDTO(assignment models.ShiftAssignment) api.ShiftAssignment {
-	shiftAssignmentDTO := api.ShiftAssignment{
+func mapShiftAssignmentToDTO(assignment models.ShiftAssignment) api.ShiftAssignmentResponse {
+	shiftAssignmentDTO := api.ShiftAssignmentResponse{
 		Id:          assignment.Id,
 		Name:        assignment.Name,
 		PhoneNumber: assignment.PhoneNumber,

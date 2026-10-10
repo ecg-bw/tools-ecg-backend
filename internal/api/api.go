@@ -39,12 +39,6 @@ type Day struct {
 	Weekday string `json:"weekday"`
 }
 
-// DeleteAssignmentRequest defines model for DeleteAssignmentRequest.
-type DeleteAssignmentRequest struct {
-	// AssignmentId Example: 501
-	AssignmentId int `json:"assignmentId"`
-}
-
 // FileInfo defines model for FileInfo.
 type FileInfo struct {
 	// Description Example: Wichtige Richtlinien für die Lebensmittelzubereitung
@@ -74,8 +68,8 @@ type Shift struct {
 	Id int `json:"id"`
 
 	// RequiredSlots Example: 3
-	RequiredSlots    int               `json:"required_slots"`
-	ShiftAssignments []ShiftAssignment `json:"shift_assignments"`
+	RequiredSlots    int                       `json:"required_slots"`
+	ShiftAssignments []ShiftAssignmentResponse `json:"shift_assignments"`
 
 	// StartTime Example: 09:00
 	StartTime string `json:"startTime"`
@@ -84,20 +78,20 @@ type Shift struct {
 	Title string `json:"title"`
 }
 
-// ShiftAssignment defines model for ShiftAssignment.
-type ShiftAssignment struct {
-	// Id Example: 501
-	Id int `json:"id"`
-
-	// Name Example: Erika Mustermann
+// ShiftAssignmentRequest defines model for ShiftAssignmentRequest.
+type ShiftAssignmentRequest struct {
+	// Name Example: Max Mustermann
 	Name string `json:"name"`
 
-	// PhoneNumber Example: +491701234567
+	// PhoneNumber Example: +4915198765432
 	PhoneNumber string `json:"phoneNumber"`
 }
 
-// ShiftAssignmentRequest defines model for ShiftAssignmentRequest.
-type ShiftAssignmentRequest struct {
+// ShiftAssignmentResponse defines model for ShiftAssignmentResponse.
+type ShiftAssignmentResponse struct {
+	// Id Example: 501
+	Id int `json:"id"`
+
 	// Name Example: Max Mustermann
 	Name string `json:"name"`
 
@@ -122,9 +116,6 @@ type CreateWaffelEntryJSONBody = map[string]interface{}
 // UpdateWaffelEntryJSONBody defines parameters for UpdateWaffelEntry.
 type UpdateWaffelEntryJSONBody = map[string]interface{}
 
-// DeleteShiftAssignmentJSONRequestBody defines body for DeleteShiftAssignment for application/json ContentType.
-type DeleteShiftAssignmentJSONRequestBody = DeleteAssignmentRequest
-
 // CreateShiftAssignmentJSONRequestBody defines body for CreateShiftAssignment for application/json ContentType.
 type CreateShiftAssignmentJSONRequestBody = ShiftAssignmentRequest
 
@@ -145,15 +136,15 @@ type ServerInterface interface {
 	// GetStandplanFiles Dateien und Dokumente abrufen
 	// (GET /standplan/files)
 	GetStandplanFiles(w http.ResponseWriter, r *http.Request)
-	// DeleteShiftAssignment Schichtbelegung löschen
-	// (DELETE /standplan/shifts/{shiftId}/)
-	DeleteShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int)
 	// CreateShiftAssignment Schichtbelegung erstellen (wenn leer)
-	// (POST /standplan/shifts/{shiftId}/)
+	// (POST /standplan/shifts/{shiftId}/assignments)
 	CreateShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int)
+	// DeleteShiftAssignment Schichtbelegung löschen
+	// (DELETE /standplan/shifts/{shiftId}/assignments/{assignmentId})
+	DeleteShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int, assignmentId int)
 	// UpdateShiftAssignment Schichtbelegung aktualisieren
-	// (PUT /standplan/shifts/{shiftId}/)
-	UpdateShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int)
+	// (PUT /standplan/shifts/{shiftId}/assignments/{assignmentId})
+	UpdateShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int, assignmentId int)
 	// GetWaffelnTotal Gesamtanzahl der Waffeln abrufen
 	// (GET /waffeln)
 	GetWaffelnTotal(w http.ResponseWriter, r *http.Request)
@@ -202,32 +193,6 @@ func (siw *ServerInterfaceWrapper) GetStandplanFiles(w http.ResponseWriter, r *h
 	handler.ServeHTTP(w, r)
 }
 
-// DeleteShiftAssignment operation middleware
-func (siw *ServerInterfaceWrapper) DeleteShiftAssignment(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-	_ = err
-
-	// ------------- Path parameter "shiftId" -------------
-	var shiftId int
-
-	err = runtime.BindStyledParameterWithOptions("simple", "shiftId", r.PathValue("shiftId"), &shiftId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "", ValueIsUnescaped: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "shiftId", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteShiftAssignment(w, r, shiftId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // CreateShiftAssignment operation middleware
 func (siw *ServerInterfaceWrapper) CreateShiftAssignment(w http.ResponseWriter, r *http.Request) {
 
@@ -254,6 +219,41 @@ func (siw *ServerInterfaceWrapper) CreateShiftAssignment(w http.ResponseWriter, 
 	handler.ServeHTTP(w, r)
 }
 
+// DeleteShiftAssignment operation middleware
+func (siw *ServerInterfaceWrapper) DeleteShiftAssignment(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "shiftId" -------------
+	var shiftId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "shiftId", r.PathValue("shiftId"), &shiftId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "", ValueIsUnescaped: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "shiftId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "assignmentId" -------------
+	var assignmentId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "assignmentId", r.PathValue("assignmentId"), &assignmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "", ValueIsUnescaped: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "assignmentId", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteShiftAssignment(w, r, shiftId, assignmentId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // UpdateShiftAssignment operation middleware
 func (siw *ServerInterfaceWrapper) UpdateShiftAssignment(w http.ResponseWriter, r *http.Request) {
 
@@ -269,8 +269,17 @@ func (siw *ServerInterfaceWrapper) UpdateShiftAssignment(w http.ResponseWriter, 
 		return
 	}
 
+	// ------------- Path parameter "assignmentId" -------------
+	var assignmentId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "assignmentId", r.PathValue("assignmentId"), &assignmentId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "", ValueIsUnescaped: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "assignmentId", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdateShiftAssignment(w, r, shiftId)
+		siw.Handler.UpdateShiftAssignment(w, r, shiftId, assignmentId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -443,9 +452,9 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	}
 
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/standplan", wrapper.GetStandplan)
-	m.HandleFunc(http.MethodDelete+" "+options.BaseURL+"/standplan/shifts/{shiftId}/{$}", wrapper.DeleteShiftAssignment)
-	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/standplan/shifts/{shiftId}/{$}", wrapper.CreateShiftAssignment)
-	m.HandleFunc(http.MethodPut+" "+options.BaseURL+"/standplan/shifts/{shiftId}/{$}", wrapper.UpdateShiftAssignment)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/standplan/shifts/{shiftId}/assignments", wrapper.CreateShiftAssignment)
+	m.HandleFunc(http.MethodDelete+" "+options.BaseURL+"/standplan/shifts/{shiftId}/assignments/{assignmentId}", wrapper.DeleteShiftAssignment)
+	m.HandleFunc(http.MethodPut+" "+options.BaseURL+"/standplan/shifts/{shiftId}/assignments/{assignmentId}", wrapper.UpdateShiftAssignment)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/waffeln", wrapper.GetWaffelnTotal)
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/waffeln", wrapper.CreateWaffelEntry)
 	m.HandleFunc(http.MethodPut+" "+options.BaseURL+"/waffeln", wrapper.UpdateWaffelEntry)
@@ -459,31 +468,31 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"7FjNbttGEH6VxbaHBJVFSv5Jo5tTO6kBpzASpwGSBsFKHJIbLYfM7tKObOht/Aw5+aYXK3aXIsU/W24S",
-	"oEB7sSRiZjnzzTffzPqaztIkSxFQKzq5pmoWQ8Ls198kMA2vYx7qQ6V4hAmgfgUqS1GBMchkmoHUHKw5",
-	"D8xf+MKSTACd7PujAdWLDOiEctQQgaTL5YBK+JxzCQGdvDcuH0qjdPoJZpouB/SILdrHB0xD7QV07I8P",
-	"dkb+zsinAxqmMmGaTpxdeajSkmNkDm2E1xHcgCqTq0tGQ2K//CwhpBP6k1fB5BUYeRYa41ecxKRkC/P7",
-	"EmAeuCSqcF+zRGkWtWNrg1KdMFjnU4TWCRcI0LBZos85KN2GkJUmJw+vVc25K4znXMAJhmlH6UDNJM80",
-	"T7EOyVs+izWPgLwyXwRHDkjC1a0kAQdyClNAlXCtQVzlU5DAdY5RV3E116LBjt8XEQeEeYpXkGliyNLl",
-	"mUtR94u1ztTE84onw1maeCEXoLzYnTjMgnCTcLnk99bUxTeoIeHe3Yek6m80G83WJC3L0uJpI0Z3bFc8",
-	"jucPKCsLQxBIpmw2ByQ5BuQceESQzeJwdSsEYFcpAINznjTKOBpPfH+bfvY7O3qd4EclUtfZpcdurwJ8",
-	"rLj+QDGomrBLFpRmUrdT9J/2pNjB6udydRurWWz6hTicL0DOWR5upytrIlahVLi30GrytQ1OL1s2gPhH",
-	"g2JAkTVxOpZ8zsjLXGmQCcNODmVxivBHnkxB1p1/2Xs6euKPxrt7+wdPtsPKRlA/cot8e9W3ndBL9uVb",
-	"0tkfPf31ycH+3u743ny2TUUzDDLBsF98ArbYvieOHO/vlB17YFcwhYqcp5qJ/nguN6zqgrA3vnem1Zzb",
-	"MRhzXky0mtjRw7MTcpVL8ifISybMVCIXKZLXrjF3rOQVYK5uEJCo9JJD0bA771Y3sQCJw7IhJxX05K/c",
-	"98cHha0yj8nh2Qkd0AuQyr1+NPSHvsEozQBZxumE7g794a4pMdOxBcZT6xPNrwh0O4tTDiFITZgQQM5Z",
-	"BITjXOSKX4B9JtcJFSIegAQk7/JL4CrHCNBgsLqdzU0ipijMHGx2C/oCdJmRFRZXPxvZ2PfNxyxFXegD",
-	"yzLBZ9bb+6TcOHEculd1W4y1VavneSzDVEQS+CwGcjgNpUk1AEVKbzW03FB5kjC5sPErlpi8q7qwqcxD",
-	"QGtYgeuV07gT4hd8qglwBHLKlV7DegEyXN1GU2bwPGIazN7z6GpIng3JKXAdrm4CwAE5s+x5vB3Mdmv4",
-	"kVjX15LtcZYuRWEAaOK8Tt7Q6yid50ZBoQ9qtwN71/bzJFh6Dm+z/baRP0YdgsQC/SkozZNEQ0Vf7xAT",
-	"EIHpXZYra1YSvo20W7Kbs83JCSj9LA0W3w3ovoV+WdcvLXNYdte7DkWZMoGqQgQKgIZGSPb8vbv80qDC",
-	"hqD9G0GYYwDYrGhhNQUBkXEVq68mL7TjjEmWgAap6OR9821HHMgxxwByeyU4OSJBvSDcWBl9W8/mCS2Y",
-	"QJuwDDaQriZC10D4MKBZqjo69y1wpQtWhNKSdA2AZdQZSJUaBWxzpfPi/IO40rN9bE+V7xLF3f8q6JCK",
-	"EsoNQlrKrOnYQeM3GK1uhSXHMceITaHOS3dDVOQiFeI+VoJUGsxFhDy6BEQiAORjS9G8gwuHc50zwRU3",
-	"09JcTY1sYUEOIy0Qg+kF0nhNmxpvsuA/Ro3WvaiXDBvFqUgRweoGA5D6voqyqkbryVGsd3cPZ1NON+0Z",
-	"XrFYWNWZchW7OW2uVhrQi8DdZgHJ+np711TeXF5/5EzuXJIfsgLVV9KePWgDmXXy5Yju089jGa++xpoE",
-	"JWLrl7iuVaCvLPoKkCD0yqjzPUYtF9/QJ+UQuF52rPnLf0GFGhht9sAGtVtt0HIzqAN6pcBtKWqtKtm1",
-	"q0/A/i9KvzA1fJq6tFz+HQAA//8=",
+	"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",
+	"ejpZsq11yGb+ScqwMbX2tH1ptfojAAD//w==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,
