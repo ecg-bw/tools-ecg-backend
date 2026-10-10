@@ -4,9 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 	"tools-ecg-backend/internal/api"
 	"tools-ecg-backend/internal/models"
 	"tools-ecg-backend/internal/service"
+
+	"github.com/oapi-codegen/runtime/types"
+)
+
+const (
+	timeLayout = "2006-01-02"
 )
 
 type ApiAdapter struct {
@@ -20,7 +27,36 @@ func NewApiAdapter(standplanService *service.StandplanService) *ApiAdapter {
 }
 
 func (a *ApiAdapter) GetStandplan(w http.ResponseWriter, r *http.Request) {
-	w.Write(fmt.Appendf([]byte{}, "Get Standplan"))
+	days, err := a.StandplanService.GetStandplan()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get standplan: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	response := api.StandplanResponse{}
+
+	for _, day := range days {
+		dayDTO, err := mapDayToDTO(day)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to map day to DTO: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		for _, shift := range day.Shifts {
+			shiftDTO := mapShiftToDTO(shift)
+
+			for _, assignment := range *shift.Assignments {
+				assignmentDTO := mapShiftAssignmentToDTO(assignment)
+				shiftDTO.ShiftAssignments = append(shiftDTO.ShiftAssignments, assignmentDTO)
+			}
+
+			dayDTO.Shifts = append(dayDTO.Shifts, shiftDTO)
+		}
+
+		response.Days = append(response.Days, dayDTO)
+	}
+
+	sendJSON(w, http.StatusOK, response)
 }
 
 func (a *ApiAdapter) GetStandplanFiles(w http.ResponseWriter, r *http.Request) {
@@ -84,4 +120,40 @@ func decodeJSONBody(r *http.Request, dst any) error {
 	}
 
 	return nil
+}
+
+func mapDayToDTO(day models.Day) (api.Day, error) {
+	/*date, err := time.Parse(time.RFC3339, day.Date)
+	if err != nil {
+		return api.Day{}, err
+	}*/
+
+	dayDTO := api.Day{
+		Id:      day.Id,
+		Date:    types.Date{Time: day.Date},
+		Weekday: day.Weekday,
+	}
+	return dayDTO, nil
+}
+
+func mapShiftToDTO(shift models.Shift) api.Shift {
+	shiftDTO := api.Shift{
+		Id:            shift.Id,
+		Title:         shift.Title,
+		StartTime:     shift.StartTime.Format(time.TimeOnly),
+		EndTime:       shift.EndTime.Format(time.TimeOnly),
+		RequiredSlots: shift.RequiredSlots,
+		Description:   *shift.Description,
+	}
+	return shiftDTO
+}
+
+func mapShiftAssignmentToDTO(assignment models.ShiftAssignment) api.ShiftAssignment {
+	shiftAssignmentDTO := api.ShiftAssignment{
+		Id:          assignment.Id,
+		Name:        assignment.Name,
+		PhoneNumber: assignment.PhoneNumber,
+	}
+
+	return shiftAssignmentDTO
 }
