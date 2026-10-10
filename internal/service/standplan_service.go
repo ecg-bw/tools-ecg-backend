@@ -13,6 +13,7 @@ type StandplanRepository interface {
 	GetAllShiftsByDayId(dayId int) ([]models.Shift, error)
 	GetAllAssignmentsByShiftId(shiftId int) ([]models.ShiftAssignment, error)
 	UpdateShiftAssignment(assignment models.ShiftAssignment) error
+	DeleteShiftAssignment(assignmentId int) error
 }
 
 type StandplanService struct {
@@ -85,6 +86,13 @@ func (s *StandplanService) UpdateShiftAssignment(assignment models.ShiftAssignme
 	if err != nil {
 		return err
 	}
-	
+
+	return nil
+}
+
+func (s *StandplanService) DeleteShiftAssignment(assignmentId int) error {
+	if err := s.StandplanRepo.DeleteShiftAssignment(assignmentId); err != nil {
+		return err
+	}
 	return nil
 }

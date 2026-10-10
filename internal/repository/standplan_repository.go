@@ -22,6 +22,8 @@ const (
 	createShiftAssignmentQuery = "INSERT INTO shift_assignments (shift_id, name, phone_number) VALUES ($1, $2, $3) RETURNING id"
 
 	updateShiftAssignemtQuery = "UPDATE shift_assignments SET name = $1, phone_number = $2 WHERE id = $3"
+
+	deleteShiftAssignemtQuery = "DELETE FROM shift_assignments WHERE id = $1;"
 	
 	getShiftByIdQuery = "SELECT * FROM shifts WHERE id = $1"
 
@@ -177,6 +179,14 @@ func (r *StandplanRepository) GetAllAssignmentsByShiftId(shiftId int) ([]models.
 
 func (r *StandplanRepository) UpdateShiftAssignment(assignment models.ShiftAssignment) error {
 	rows := r.DB.QueryRow(updateShiftAssignemtQuery, assignment.Name, assignment.PhoneNumber, assignment.Id)
+	if err := rows.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *StandplanRepository) DeleteShiftAssignment(assignmentId int) error {
+	rows := r.DB.QueryRow(deleteShiftAssignemtQuery, assignmentId)
 	if err := rows.Err(); err != nil {
 		return err
 	}

@@ -64,7 +64,12 @@ func (a *ApiAdapter) GetStandplanFiles(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *ApiAdapter) DeleteShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int, assignmentId int) {
-	w.Write(fmt.Appendf([]byte{}, "Delete Shift Assignment: %d", shiftId))
+	err := a.StandplanService.DeleteShiftAssignment(assignmentId)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to update shift assignment with id %d: %v", assignmentId, err), http.StatusBadRequest)
+	}
+
+	sendJSON(w, http.StatusOK, nil)
 }
 
 func (a *ApiAdapter) CreateShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int) {
