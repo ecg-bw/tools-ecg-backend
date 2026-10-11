@@ -34,6 +34,8 @@ const (
 	getAllShiftsByDayIdQuery = "SELECT * FROM shifts WHERE day_id = $1"
 
 	getAllAssignmentsByShiftIdQuery = "SELECT * FROM shift_assignments WHERE shift_id = $1"
+
+	getShiftByTime = "SELECT shifts.id FROM shifts  JOIN days ON shifts.day_id = days.id WHERE shifts.start_time < $1 AND shifts.end_time > $1 AND days.date = $2"
 )
 
 func (r *StandplanRepository) CreateShiftAssignment(assignment models.ShiftAssignment) (int, error) {
@@ -191,4 +193,15 @@ func (r *StandplanRepository) DeleteShiftAssignment(assignmentId int) error {
 		return err
 	}
 	return nil
+}
+
+func (r *StandplanRepository) GetShiftByTime (dateTime time.Time) (int, error) {
+	var id int
+	if err := r.DB.QueryRow(getShiftByTime, dateTime.Format(time.TimeOnly), dateTime.Format(time.DateOnly)).Scan(&id); err != nil {
+		if err == sql.ErrNoRows {
+			return 0, nil
+		}
+		return 0, err
+	}
+	return id, nil
 }
