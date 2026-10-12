@@ -22,15 +22,21 @@ jobs:
   go-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
-        with:
-          go-version: stable
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-      - name: golangci-linta
-        uses: golangci/golangci-lint-action@v9
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          version: v2.13
+          go-version-file: 'go.mod' # Ensures setup-go uses the exact Go version defined in go.mod
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          # Use 'latest' or a valid release tag like 'v1.60.3'
+          version: latest
+          # Ensures the action reuses the installed Go environment instead of fetching an incompatible version
+          skip-pkg-cache: true
 
 
   test:
