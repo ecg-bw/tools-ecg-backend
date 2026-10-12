@@ -120,11 +120,33 @@ func (a *ApiAdapter) UpdateShiftAssignment(w http.ResponseWriter, r *http.Reques
 }
 
 func (a *ApiAdapter) GetWaffelnTotal(w http.ResponseWriter, r *http.Request) {
-	w.Write(fmt.Appendf([]byte{}, "Get Waffeln Total"))
+	total, err := a.StandplanService.GetWaffelnTotalCount()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to get total waffel count: %v", err), http.StatusBadRequest)
+	}
+
+	response := api.WaffelnTotalResponse {
+		WaffelnTotal: total,
+	}
+
+	sendJSON(w, http.StatusOK, response)
 }
 
 func (a *ApiAdapter) CreateWaffelEntry(w http.ResponseWriter, r *http.Request) {
-	w.Write(fmt.Appendf([]byte{}, "Create Waffel Entry"))
+	waffel := models.Waffel {
+		CreatedAt: time.Now(),
+	}
+
+	id, err := a.StandplanService.CreateWaffel(waffel)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("failed to create waffel: %v", err), http.StatusBadRequest)
+	}
+
+	response := api.CreateWaffelResponse {
+		Id: id,
+	}
+
+	sendJSON(w, http.StatusOK, response)
 }
 
 func (a *ApiAdapter) UpdateWaffelEntry(w http.ResponseWriter, r *http.Request) {

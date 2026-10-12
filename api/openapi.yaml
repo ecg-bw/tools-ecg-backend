@@ -131,7 +131,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WaffelnTotalResponse'
+                $ref: '#/components/schemas/CreateWaffelResponse'
 
     put:
       summary: Waffel-Zähler aktualisieren
@@ -150,7 +150,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WaffelnTotalResponse'
+                $ref: '#/components/schemas/CreateWaffelResponse'
 
   /standplan/files:
     get:
@@ -288,6 +288,15 @@ components:
         - waffelnTotal
       properties:
         waffelnTotal:
+          type: integer
+          example: 142
+
+    CreateWaffelResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
           type: integer
           example: 142
 

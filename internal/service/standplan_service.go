@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"time"
 	"tools-ecg-backend/internal/models"
 )
 
@@ -14,15 +15,23 @@ type StandplanRepository interface {
 	GetAllAssignmentsByShiftId(shiftId int) ([]models.ShiftAssignment, error)
 	UpdateShiftAssignment(assignment models.ShiftAssignment) error
 	DeleteShiftAssignment(assignmentId int) error
+	GetShiftByTime (time time.Time) (int, error)
+}
+
+type WaffelnRepository interface {
+	GetWaffelnTotalCount() (int, error)
+	CreateWaffel(waffel models.Waffel) (int, error)
 }
 
 type StandplanService struct {
-	StandplanRepo StandplanRepository
+	StandplanRepo 	StandplanRepository
+	WaffelnRepo 	WaffelnRepository
 }
 
-func NewStandplanService(repo StandplanRepository) *StandplanService {
+func NewStandplanService(standplanRepo StandplanRepository, waffelnRepo WaffelnRepository) *StandplanService {
 	return &StandplanService{
-		StandplanRepo: repo,
+		StandplanRepo: standplanRepo,
+		WaffelnRepo: waffelnRepo,
 	}
 }
 
@@ -95,4 +104,31 @@ func (s *StandplanService) DeleteShiftAssignment(assignmentId int) error {
 		return err
 	}
 	return nil
+}
+
+func (s *StandplanService) GetWaffelnTotalCount() (int, error) {
+	total, err := s.WaffelnRepo.GetWaffelnTotalCount()
+	if err != nil {
+		return 0, nil
+	}
+
+	return total, nil
+}
+
+func (s *StandplanService) CreateWaffel(waffel models.Waffel) (int, error) {
+	shiftId, err := s.StandplanRepo.GetShiftByTime(time.Now())
+	if err != nil {
+		return 0, fmt.Errorf("failed to get active shiftId: %v", err)
+	}
+
+	if shiftId == 0 { shiftId = 2} // TODO: Make shiftId nullable and just set it if one is active
+
+	waffel.ShiftId = shiftId
+	
+	waffelId, err := s.WaffelnRepo.CreateWaffel(waffel)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create waffel: %v", err)
+	}
+
+	return waffelId, nil
 }
