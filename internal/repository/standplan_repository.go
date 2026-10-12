@@ -75,7 +75,13 @@ func (r *StandplanRepository) GetShiftAssignmentsByShiftId(shiftId int) ([]model
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func () {
+		err = rows.Close()
+	}()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for rows.Next() {
 		var assignment models.ShiftAssignment
@@ -99,7 +105,13 @@ func (r *StandplanRepository) GetAllDays() ([]models.Day, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func () {
+		err = rows.Close()
+	}()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for rows.Next() {
 		var day models.Day
@@ -131,7 +143,13 @@ func (r *StandplanRepository) GetAllShiftsByDayId(dayId int) ([]models.Shift, er
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func () {
+		err = rows.Close()
+	}()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for rows.Next() {
 		var shift models.Shift
@@ -162,7 +180,13 @@ func (r *StandplanRepository) GetAllAssignmentsByShiftId(shiftId int) ([]models.
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func () {
+		err = rows.Close()
+	}()
+
+	if err != nil {
+		return nil, err
+	}
 
 	for rows.Next() {
 		var assignment models.ShiftAssignment

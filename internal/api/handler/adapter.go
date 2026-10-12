@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 	"tools-ecg-backend/internal/api"
@@ -10,10 +11,6 @@ import (
 	"tools-ecg-backend/internal/service"
 
 	"github.com/oapi-codegen/runtime/types"
-)
-
-const (
-	timeLayout = "2006-01-02"
 )
 
 type ApiAdapter struct {
@@ -60,7 +57,9 @@ func (a *ApiAdapter) GetStandplan(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *ApiAdapter) GetStandplanFiles(w http.ResponseWriter, r *http.Request) {
-	w.Write(fmt.Appendf([]byte{}, "Get Standplan Files"))
+	if _, err := w.Write(fmt.Appendf([]byte{}, "Get Standplan Files")); err != nil {
+		slog.Error("write GetStandplanFiles: ", "error", err)
+	}
 }
 
 func (a *ApiAdapter) DeleteShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int, assignmentId int) {
@@ -150,7 +149,9 @@ func (a *ApiAdapter) CreateWaffelEntry(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *ApiAdapter) UpdateWaffelEntry(w http.ResponseWriter, r *http.Request) {
-	w.Write(fmt.Appendf([]byte{}, "Update Waffel Entry"))
+	if _, err := w.Write(fmt.Appendf([]byte{}, "Update Waffel Entry")); err != nil {
+		slog.Error("write UpdateWaffelnEntry: ", "error", err)
+	}
 }
 
 func sendJSON(w http.ResponseWriter, status int, data any) {

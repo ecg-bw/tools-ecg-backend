@@ -61,7 +61,11 @@ func main() {
 		slog.Error("create database connection failed: ", "error", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func () {
+		if err = db.Close(); err != nil {
+			slog.Error("closing database client: ", "error", err)
+		}
+	}()
 
 	// 1. Datenbank-Migrationen idempotent ausführen
 	if err := database.RunMigrations(db); err != nil {
@@ -76,7 +80,9 @@ func main() {
 	openAPISpec := swagger.GetOpenAPISpec()
 	rootMux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/yaml")
-		w.Write(openAPISpec)
+		if _, err = w.Write(openAPISpec); err != nil {
+			slog.Error("write swagger ui: ", "error", err)
+		}
 	})
 	rootMux.Handle("/swagger-ui/", httpSwagger.Handler(httpSwagger.URL("/openapi.yaml")))
 	rootMux.HandleFunc("GET /swagger-ui", func(w http.ResponseWriter, r *http.Request) {
