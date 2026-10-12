@@ -1,6 +1,11 @@
 name: CI/CD Pipeline
 
 on:
+  pull_request:
+    branches:
+      - main
+      - qa
+      - dev
   push:
     branches:
       - main
@@ -14,22 +19,19 @@ env:
   BASE_DOMAIN: ${{ vars.BASE_DOMAIN }}
 
 jobs:
-  golangci:
-    name: lint
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version: stable
-      - name: golangci-lint
+
+      - name: golangci-linta
         uses: golangci/golangci-lint-action@v9
         with:
           version: v2.13
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -78,6 +80,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: ${{ needs.build.outputs.stage }}
     steps:
