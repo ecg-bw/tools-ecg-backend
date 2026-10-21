@@ -6,6 +6,7 @@ import (
 	"tools-ecg-backend/internal/models"
 )
 
+//go:generate mockgen -source=standplan_service.go -destination=../mocks/standplan_service_mock.go -package=mocks
 type StandplanRepository interface {
 	CreateShiftAssignment(assignment models.ShiftAssignment) (int, error)
 	GetShiftById(shiftId int) (*models.Shift, error)
@@ -109,19 +110,19 @@ func (s *StandplanService) DeleteShiftAssignment(assignmentId int) error {
 func (s *StandplanService) GetWaffelnTotalCount() (int, error) {
 	total, err := s.WaffelnRepo.GetWaffelnTotalCount()
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	return total, nil
 }
 
 func (s *StandplanService) CreateWaffel(waffel models.Waffel) (int, error) {
-	shiftId, err := s.StandplanRepo.GetShiftByTime(time.Now())
+	shiftId, err := s.StandplanRepo.GetShiftByTime(waffel.CreatedAt)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get active shiftId: %v", err)
 	}
 
-	if shiftId == 0 { shiftId = 2} // TODO: Make shiftId nullable and just set it if one is active
+	if shiftId == 0 { shiftId = 2 } // TODO: Make shiftId nullable and just set it if one is active
 
 	waffel.ShiftId = shiftId
 	
