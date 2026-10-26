@@ -219,7 +219,7 @@ func (r *StandplanRepository) DeleteShiftAssignment(assignmentId int) error {
 	return nil
 }
 
-func (r *StandplanRepository) GetShiftByTime (dateTime time.Time) (int, error) {
+func (r *StandplanRepository) GetShiftByTime(dateTime time.Time) (int, error) {
 	var id int
 	if err := r.DB.QueryRow(getShiftByTime, dateTime.Format(time.TimeOnly), dateTime.Format(time.DateOnly)).Scan(&id); err != nil {
 		if err == sql.ErrNoRows {
