@@ -65,6 +65,7 @@ func (s *StandplanService) GetStandplan() ([]models.Weekend, error) {
 	outer:
 	for _, day := range days {
 		for i, weekend := range weekends {
+			// TODO: Split Weekends by Days.WeekendId (see DB)
 			if IsSameWeekend(day.Date, weekend.Days[0].Date) {
 				weekends[i].Days = append(weekends[i].Days, day)
 
