@@ -35,7 +35,7 @@ func NewStandplanService(standplanRepo StandplanRepository, waffelnRepo WaffelnR
 	}
 }
 
-func (s *StandplanService) GetStandplan() ([]models.Day, error) {
+func (s *StandplanService) GetStandplan() ([]models.Weekend, error) {
 	// Get all days
 	days, err := s.StandplanRepo.GetAllDays()
 	if err != nil {
@@ -60,7 +60,21 @@ func (s *StandplanService) GetStandplan() ([]models.Day, error) {
 		days[i].Shifts = shifts
 	}
 
-	return days, nil
+	weekends := []models.Weekend{}
+
+	outer:
+	for _, day := range days {
+		for i, weekend := range weekends {
+			if IsSameWeekend(day.Date, weekend.Days[0].Date) {
+				weekends[i].Days = append(weekends[i].Days, day)
+
+				continue outer
+			}
+		}
+		weekends = append(weekends, models.Weekend{Days: []models.Day{day}})
+	}
+
+	return weekends, nil
 }	
 
 func (s *StandplanService) CreateShiftAssignment(assignment models.ShiftAssignment) (int, error) {
@@ -131,4 +145,25 @@ func (s *StandplanService) CreateWaffel(waffel models.Waffel) (int, error) {
 	}
 
 	return waffelId, nil
+}
+
+func IsSameWeekend(d1, d2 time.Time) bool {
+	getSaturday := func(t time.Time) time.Time {
+		// Normalize to midnight to avoid time drift
+		t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+		weekday := t.Weekday()
+		
+		var offset int
+		if weekday == time.Sunday {
+			offset = -1 // Sunday belongs to the weekend starting the previous Saturday
+		} else {
+			offset = int(time.Saturday - weekday) // Days until upcoming/current Saturday
+		}
+		return t.AddDate(0, 0, offset)
+	}
+
+	sat1 := getSaturday(d1)
+	sat2 := getSaturday(d2)
+
+	return sat1.Equal(sat2)
 }
