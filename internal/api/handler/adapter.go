@@ -24,7 +24,7 @@ func NewApiAdapter(standplanService *service.StandplanService) *ApiAdapter {
 }
 
 func (a *ApiAdapter) GetStandplan(w http.ResponseWriter, r *http.Request) {
-	days, err := a.StandplanService.GetStandplan()
+	weekends, err := a.StandplanService.GetStandplan()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get standplan: %v", err), http.StatusInternalServerError)
 		return
@@ -32,25 +32,31 @@ func (a *ApiAdapter) GetStandplan(w http.ResponseWriter, r *http.Request) {
 
 	response := api.StandplanResponse{}
 
-	for _, day := range days {
-		dayDTO, err := mapDayToDTO(day)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to map day to DTO: %v", err), http.StatusInternalServerError)
-			return
-		}
+	for _, weekend := range weekends {
+		weekendDTO := api.Weekend{}
 
-		for _, shift := range day.Shifts {
-			shiftDTO := mapShiftToDTO(shift)
-
-			for _, assignment := range *shift.Assignments {
-				assignmentDTO := mapShiftAssignmentToDTO(assignment)
-				shiftDTO.ShiftAssignments = append(shiftDTO.ShiftAssignments, assignmentDTO)
+		for _, day := range weekend.Days {
+			dayDTO, err := mapDayToDTO(day)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to map day to DTO: %v", err), http.StatusInternalServerError)
+				return
 			}
 
-			dayDTO.Shifts = append(dayDTO.Shifts, shiftDTO)
+			for _, shift := range day.Shifts {
+				shiftDTO := mapShiftToDTO(shift)
+
+				for _, assignment := range *shift.Assignments {
+					assignmentDTO := mapShiftAssignmentToDTO(assignment)
+					shiftDTO.ShiftAssignments = append(shiftDTO.ShiftAssignments, assignmentDTO)
+				}
+
+				dayDTO.Shifts = append(dayDTO.Shifts, shiftDTO)
+			}
+
+			weekendDTO.Days = append(weekendDTO.Days, dayDTO)
 		}
 
-		response.Days = append(response.Days, dayDTO)
+		response.Weekends = append(response.Weekends, weekendDTO)
 	}
 
 	sendJSON(w, http.StatusOK, response)
@@ -97,7 +103,7 @@ func (a *ApiAdapter) CreateShiftAssignment(w http.ResponseWriter, r *http.Reques
 }
 
 func (a *ApiAdapter) UpdateShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int, assignmentId int) {
-	var body api.UpdateShiftAssignmentJSONRequestBody
+	var body api.ShiftAssignmentRequest
 	err := decodeJSONBody(r, &body)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
@@ -115,7 +121,13 @@ func (a *ApiAdapter) UpdateShiftAssignment(w http.ResponseWriter, r *http.Reques
 		http.Error(w, fmt.Sprintf("failed to update shift assignment with id %d: %v", assignmentId, err), http.StatusBadRequest)
 	}
 
-	sendJSON(w, http.StatusOK, nil)
+	response := api.ShiftAssignmentResponse{
+		Id:			assignment.Id,
+		Name: 		assignment.Name,
+		PhoneNumber: assignment.PhoneNumber,
+	}
+
+	sendJSON(w, http.StatusOK, response)
 }
 
 func (a *ApiAdapter) GetWaffelnTotal(w http.ResponseWriter, r *http.Request) {

@@ -10,19 +10,23 @@ type ShiftAssignment struct {
 }
 
 type Shift struct {
-	Id 		int
-	DayId 	int
-	Title 	string
-	StartTime 	time.Time
-	EndTime 	time.Time
-	RequiredSlots int
-	Description *string
-	Assignments *[]ShiftAssignment
+	Id 				int
+	DayId 			int
+	Title 			string
+	StartTime 		time.Time
+	EndTime 		time.Time
+	RequiredSlots 	int
+	Description 	*string
+	Assignments 	*[]ShiftAssignment
 }
 
 type Day struct {
-	Id int
+	Id 		int
 	Weekday string
-	Date time.Time
-	Shifts []Shift
+	Date 	time.Time
+	Shifts 	[]Shift
+}
+
+type Weekend struct {
+	Days	[]Day
 }
