@@ -57,14 +57,18 @@ func TestCreateShiftAssignment(t *testing.T) {
 		require.NoError(t, err)
 		defer db.Close()
 
-		standplanRepo := NewStandplanRepository(db)
-
 		mock = tt.before(mock)
+
+		standplanRepo := NewStandplanRepository(db)
 
 		result, err := standplanRepo.CreateShiftAssignment(tt.fields)
 
 		if err != nil && !tt.wantErr {
 			t.Errorf("CreateShiftAssignment() error = %v, wantErr = %t", err, tt.wantErr)
+		}
+
+		if mock.ExpectationsWereMet() != nil {
+			t.Errorf("CreateShiftAssignment() error = %v", err)
 		}
 
 		require.Equal(t, tt.want, result, "GetWaffelnTotalCount() result = %v, want = %v", result, tt.want) 
