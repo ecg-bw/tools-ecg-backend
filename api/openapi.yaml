@@ -186,6 +186,7 @@ components:
       required:
         - id
         - weekday
+        - dayOfWeek
         - date
         - shifts
       properties:
@@ -203,6 +204,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Shift'
+        dayOfWeek:
+          type: integer
+          example: 1
 
     Shift:
       type: object

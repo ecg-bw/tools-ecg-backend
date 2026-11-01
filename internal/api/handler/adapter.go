@@ -190,6 +190,7 @@ func mapDayToDTO(day models.Day) (api.Day, error) {
 		Id:      day.Id,
 		Date:    types.Date{Time: day.Date},
 		Weekday: day.Weekday,
+		DayOfWeek: int(day.Date.Weekday()),
 	}
 	return dayDTO, nil
 }
