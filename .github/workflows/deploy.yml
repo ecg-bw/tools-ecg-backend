@@ -37,6 +37,7 @@ jobs:
 
 
   test:
+    needs: go-lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
