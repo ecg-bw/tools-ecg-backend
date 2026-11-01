@@ -78,6 +78,10 @@ paths:
       responses:
         '200':
           description: Schichtbelegung erfolgreich geändert.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShiftAssignmentResponse'
 
     delete:
       summary: Schichtbelegung löschen
@@ -90,16 +94,6 @@ paths:
           description: Zuweisung erfolgreich entfernt.
         '404':
           description: Zuweisung oder Schicht nicht gefunden.
-
-  /standplan/shifts/{shiftId}/:
-    parameters:
-      - name: shiftId
-        in: path
-        required: true
-        description: Die Eindeutige ID der Schicht.
-        schema:
-          type: integer
-          example: 12
 
   /waffeln:
     get:
@@ -170,6 +164,16 @@ components:
     StandplanResponse:
       type: object
       required:
+        - weekends
+      properties:
+        weekends:
+          type: array
+          items:
+            $ref: '#/components/schemas/Weekend'
+
+    Weekend:
+      type: object
+      required:
         - days
       properties:
         days:
@@ -219,10 +223,12 @@ components:
           example: "Frühschicht Waffelverkauf"
         startTime:
           type: string
-          example: "09:00"
+          pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' # Für HH:mm
+          example: "14:00"
         endTime:
           type: string
-          example: "12:00"
+          pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$' # Für HH:mm
+          example: "14:00"
         required_slots:
           type: integer
           example: 3
