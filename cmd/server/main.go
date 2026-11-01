@@ -89,6 +89,10 @@ func main() {
 		http.Redirect(w, r, "/swagger-ui/", http.StatusMovedPermanently)
 	})
 
+	// File Server
+	fileServer := http.FileServer(http.Dir("../../static"))
+    rootMux.Handle("/static/", http.StripPrefix("/static", fileServer))
+
 	// Registriere alle OpenAPI v1 Routen
 	standplanRepo := repository.NewStandplanRepository(db)
 	waffelnRepo := repository.NewWaffelnRepository(db)
