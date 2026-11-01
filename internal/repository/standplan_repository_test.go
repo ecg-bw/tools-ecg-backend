@@ -57,9 +57,9 @@ func TestCreateShiftAssignment(t *testing.T) {
 		require.NoError(t, err)
 		defer db.Close()
 
-		standplanRepo := NewStandplanRepository(db)
-
 		mock = tt.before(mock)
+
+		standplanRepo := NewStandplanRepository(db)
 
 		result, err := standplanRepo.CreateShiftAssignment(tt.fields)
 
