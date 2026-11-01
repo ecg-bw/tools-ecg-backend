@@ -12,7 +12,7 @@ import (
 )
 
 func TestGetStandplan(t *testing.T) {
-	exampleStandplan := []models.Day{
+	exampleDays := []models.Day{
 		{
 			Id:			1,
 			Weekday: 	"",
@@ -39,17 +39,23 @@ func TestGetStandplan(t *testing.T) {
 		},
 	}
 
+	exampleStandplan := []models.Weekend{
+		{
+			Days: exampleDays,
+		},
+	}
+
 	failedError := fmt.Errorf("error occured")
 
 	tests := []struct{
 		name 	string
-		want	[]models.Day
+		want	[]models.Weekend
 		before	func (mock *mocks.MockStandplanRepository) *mocks.MockStandplanRepository
 		wantErr	bool
 	}{
 		{
 			name:	"Sucess/get empty Standplan",
-			want:	[]models.Day{},
+			want:	[]models.Weekend{},
 			before:	func(mock *mocks.MockStandplanRepository) *mocks.MockStandplanRepository {
 				mock.EXPECT().GetAllDays().Return([]models.Day{}, nil)
 				return mock
@@ -60,9 +66,9 @@ func TestGetStandplan(t *testing.T) {
 			name:	"Sucess/get full Standplan",
 			want:	exampleStandplan,
 			before: func(mock *mocks.MockStandplanRepository) *mocks.MockStandplanRepository {
-				mock.EXPECT().GetAllDays().Return(exampleStandplan, nil)
-				mock.EXPECT().GetAllShiftsByDayId(exampleStandplan[len(exampleStandplan)-1].Id).Return(exampleStandplan[len(exampleStandplan)-1].Shifts, nil)
-				mock.EXPECT().GetAllAssignmentsByShiftId(exampleStandplan[len(exampleStandplan)-1].Shifts[len(exampleStandplan[len(exampleStandplan)-1].Shifts)-1].Id).Return(*exampleStandplan[len(exampleStandplan)-1].Shifts[len(exampleStandplan[len(exampleStandplan)-1].Shifts)-1].Assignments, nil)
+				mock.EXPECT().GetAllDays().Return(exampleDays, nil)
+				mock.EXPECT().GetAllShiftsByDayId(exampleDays[len(exampleDays)-1].Id).Return(exampleDays[len(exampleDays)-1].Shifts, nil)
+				mock.EXPECT().GetAllAssignmentsByShiftId(exampleDays[len(exampleDays)-1].Shifts[len(exampleDays[len(exampleDays)-1].Shifts)-1].Id).Return(*exampleDays[len(exampleDays)-1].Shifts[len(exampleDays[len(exampleDays)-1].Shifts)-1].Assignments, nil)
 				return mock
 			},
 			wantErr: false,
@@ -80,8 +86,8 @@ func TestGetStandplan(t *testing.T) {
 			name:	"Failed/error for getting shifts",
 			want:	nil,
 			before: func(mock *mocks.MockStandplanRepository) *mocks.MockStandplanRepository {
-				mock.EXPECT().GetAllDays().Return(exampleStandplan, nil)
-				mock.EXPECT().GetAllShiftsByDayId(exampleStandplan[len(exampleStandplan)-1].Id).Return(nil, failedError)
+				mock.EXPECT().GetAllDays().Return(exampleDays, nil)
+				mock.EXPECT().GetAllShiftsByDayId(exampleDays[len(exampleDays)-1].Id).Return(nil, failedError)
 				return mock
 			},
 			wantErr: true,
@@ -90,9 +96,9 @@ func TestGetStandplan(t *testing.T) {
 			name:	"Failed/error for getting assignments",
 			want:	nil,
 			before: func(mock *mocks.MockStandplanRepository) *mocks.MockStandplanRepository {
-				mock.EXPECT().GetAllDays().Return(exampleStandplan, nil)
-				mock.EXPECT().GetAllShiftsByDayId(exampleStandplan[len(exampleStandplan)-1].Id).Return(exampleStandplan[len(exampleStandplan)-1].Shifts, nil)
-				mock.EXPECT().GetAllAssignmentsByShiftId(exampleStandplan[len(exampleStandplan)-1].Shifts[len(exampleStandplan[len(exampleStandplan)-1].Shifts)-1].Id).Return(nil, failedError)
+				mock.EXPECT().GetAllDays().Return(exampleDays, nil)
+				mock.EXPECT().GetAllShiftsByDayId(exampleDays[len(exampleDays)-1].Id).Return(exampleDays[len(exampleDays)-1].Shifts, nil)
+				mock.EXPECT().GetAllAssignmentsByShiftId(exampleDays[len(exampleDays)-1].Shifts[len(exampleDays[len(exampleDays)-1].Shifts)-1].Id).Return(nil, failedError)
 				return mock
 			},
 			wantErr: true,
