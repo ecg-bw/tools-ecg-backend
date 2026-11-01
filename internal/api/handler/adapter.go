@@ -62,6 +62,12 @@ func (a *ApiAdapter) GetStandplanFiles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (a *ApiAdapter) CreateStandplanFiles(w http.ResponseWriter, r *http.Request) {
+	if _, err := w.Write(fmt.Appendf([]byte{}, "Get Standplan Files")); err != nil {
+		slog.Error("write GetStandplanFiles: ", "error", err)
+	}
+}
+
 func (a *ApiAdapter) DeleteShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int, assignmentId int) {
 	err := a.StandplanService.DeleteShiftAssignment(assignmentId)
 	if err != nil {
