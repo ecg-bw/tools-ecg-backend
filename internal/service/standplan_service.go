@@ -6,6 +6,7 @@ import (
 	"tools-ecg-backend/internal/models"
 )
 
+//go:generate mockgen -source=standplan_service.go -destination=../mocks/standplan_service_mock.go -package=mocks
 type StandplanRepository interface {
 	CreateShiftAssignment(assignment models.ShiftAssignment) (int, error)
 	GetShiftById(shiftId int) (*models.Shift, error)
@@ -42,7 +43,7 @@ func NewStandplanService(standplanRepo StandplanRepository, waffelnRepo WaffelnR
 	}
 }
 
-func (s *StandplanService) GetStandplan() ([]models.Day, error) {
+func (s *StandplanService) GetStandplan() ([]models.Weekend, error) {
 	// Get all days
 	days, err := s.StandplanRepo.GetAllDays()
 	if err != nil {
@@ -67,7 +68,22 @@ func (s *StandplanService) GetStandplan() ([]models.Day, error) {
 		days[i].Shifts = shifts
 	}
 
-	return days, nil
+	weekends := []models.Weekend{}
+
+	outer:
+	for _, day := range days {
+		for i, weekend := range weekends {
+			// TODO: Split Weekends by Days.WeekendId (see DB)
+			if IsSameWeekend(day.Date, weekend.Days[0].Date) {
+				weekends[i].Days = append(weekends[i].Days, day)
+
+				continue outer
+			}
+		}
+		weekends = append(weekends, models.Weekend{Days: []models.Day{day}})
+	}
+
+	return weekends, nil
 }
 
 func (s *StandplanService) GetStandplanFiles() ([]models.File, error) {
@@ -124,19 +140,19 @@ func (s *StandplanService) DeleteShiftAssignment(assignmentId int) error {
 func (s *StandplanService) GetWaffelnTotalCount() (int, error) {
 	total, err := s.WaffelnRepo.GetWaffelnTotalCount()
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	return total, nil
 }
 
 func (s *StandplanService) CreateWaffel(waffel models.Waffel) (int, error) {
-	shiftId, err := s.StandplanRepo.GetShiftByTime(time.Now())
+	shiftId, err := s.StandplanRepo.GetShiftByTime(waffel.CreatedAt)
 	if err != nil {
 		return 0, fmt.Errorf("failed to get active shiftId: %v", err)
 	}
 
-	if shiftId == 0 { shiftId = 2} // TODO: Make shiftId nullable and just set it if one is active
+	if shiftId == 0 { shiftId = 2 } // TODO: Make shiftId nullable and just set it if one is active
 
 	waffel.ShiftId = shiftId
 	
@@ -146,4 +162,25 @@ func (s *StandplanService) CreateWaffel(waffel models.Waffel) (int, error) {
 	}
 
 	return waffelId, nil
+}
+
+func IsSameWeekend(d1, d2 time.Time) bool {
+	getSaturday := func(t time.Time) time.Time {
+		// Normalize to midnight to avoid time drift
+		t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+		weekday := t.Weekday()
+		
+		var offset int
+		if weekday == time.Sunday {
+			offset = -1 // Sunday belongs to the weekend starting the previous Saturday
+		} else {
+			offset = int(time.Saturday - weekday) // Days until upcoming/current Saturday
+		}
+		return t.AddDate(0, 0, offset)
+	}
+
+	sat1 := getSaturday(d1)
+	sat2 := getSaturday(d2)
+
+	return sat1.Equal(sat2)
 }

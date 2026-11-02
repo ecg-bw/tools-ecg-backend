@@ -3,8 +3,10 @@ module tools-ecg-backend
 go 1.26.4
 
 require (
+	github.com/go-openapi/testify/v2 v2.8.0
 	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/lib/pq v1.12.3
+	go.uber.org/mock v0.6.0
 )
 
 require (
@@ -16,6 +18,7 @@ require (
 )
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/getkin/kin-openapi v0.142.0
 	github.com/go-openapi/jsonpointer v1.0.2 // indirect
