@@ -20,6 +20,24 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+// CreateFilesRequest defines model for CreateFilesRequest.
+type CreateFilesRequest struct {
+	// Description Example: Wichtige Richtlinien für die Lebensmittelzubereitung
+	Description string `json:"description"`
+
+	// Title Example: Hygienekonzept 2026
+	Title string `json:"title"`
+
+	// Url Example: https://example.com/files/hygiene.pdf
+	Url string `json:"url"`
+}
+
+// CreateFilesResponse defines model for CreateFilesResponse.
+type CreateFilesResponse struct {
+	// Id Example: 142
+	Id int `json:"id"`
+}
+
 // CreateShiftAssignmentResponse defines model for CreateShiftAssignmentResponse.
 type CreateShiftAssignmentResponse struct {
 	// Id Example: 501
@@ -52,6 +70,9 @@ type Day struct {
 type FileInfo struct {
 	// Description Example: Wichtige Richtlinien für die Lebensmittelzubereitung
 	Description string `json:"description"`
+
+	// Id Example: 1
+	Id int `json:"id"`
 
 	// Title Example: Hygienekonzept 2026
 	Title string `json:"title"`
@@ -130,6 +151,9 @@ type CreateWaffelEntryJSONBody = map[string]interface{}
 // UpdateWaffelEntryJSONBody defines parameters for UpdateWaffelEntry.
 type UpdateWaffelEntryJSONBody = map[string]interface{}
 
+// CreateStandplanFilesJSONRequestBody defines body for CreateStandplanFiles for application/json ContentType.
+type CreateStandplanFilesJSONRequestBody = CreateFilesRequest
+
 // CreateShiftAssignmentJSONRequestBody defines body for CreateShiftAssignment for application/json ContentType.
 type CreateShiftAssignmentJSONRequestBody = ShiftAssignmentRequest
 
@@ -150,6 +174,9 @@ type ServerInterface interface {
 	// GetStandplanFiles Dateien und Dokumente abrufen
 	// (GET /standplan/files)
 	GetStandplanFiles(w http.ResponseWriter, r *http.Request)
+	// CreateStandplanFiles Dateien und Dokumente hinzufügen
+	// (POST /standplan/files)
+	CreateStandplanFiles(w http.ResponseWriter, r *http.Request)
 	// CreateShiftAssignment Schichtbelegung erstellen (wenn leer)
 	// (POST /standplan/shifts/{shiftId}/assignments)
 	CreateShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int)
@@ -198,6 +225,20 @@ func (siw *ServerInterfaceWrapper) GetStandplanFiles(w http.ResponseWriter, r *h
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetStandplanFiles(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateStandplanFiles operation middleware
+func (siw *ServerInterfaceWrapper) CreateStandplanFiles(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateStandplanFiles(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -473,6 +514,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/waffeln", wrapper.CreateWaffelEntry)
 	m.HandleFunc(http.MethodPut+" "+options.BaseURL+"/waffeln", wrapper.UpdateWaffelEntry)
 	m.HandleFunc(http.MethodGet+" "+options.BaseURL+"/standplan/files", wrapper.GetStandplanFiles)
+	m.HandleFunc(http.MethodPost+" "+options.BaseURL+"/standplan/files", wrapper.CreateStandplanFiles)
 
 	return m
 }
@@ -482,32 +524,33 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

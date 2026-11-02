@@ -159,6 +159,24 @@ paths:
               schema:
                 $ref: '#/components/schemas/FilesResponse'
 
+    post:
+      summary: Dateien und Dokumente hinzufügen
+      description:  Gibt einen ID für das jeweilige Dokument zurück
+      operationId: createStandplanFiles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFilesRequest'
+      responses:
+        '200':
+          description: Erfolgreich hinzugefügt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateFilesResponse'
+
 components:
   schemas:
     StandplanResponse:
@@ -313,10 +331,14 @@ components:
     FileInfo:
       type: object
       required:
+        - id
         - title
         - description
         - url
       properties:
+        id:
+          type: integer
+          example: 1
         title:
           type: string
           example: "Hygienekonzept 2026"
@@ -337,3 +359,30 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/FileInfo'
+
+    CreateFilesRequest:
+      type: object
+      required:
+        - title
+        - description
+        - url
+      properties:
+        title:
+          type: string
+          example: "Hygienekonzept 2026"
+        description:
+          type: string
+          example: "Wichtige Richtlinien für die Lebensmittelzubereitung"
+        url:
+          type: string
+          format: uri
+          example: "https://example.com/files/hygiene.pdf"
+
+    CreateFilesResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          example: 142

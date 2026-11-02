@@ -227,3 +227,57 @@ func (mr *MockWaffelnRepositoryMockRecorder) GetWaffelnTotalCount() *gomock.Call
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWaffelnTotalCount", reflect.TypeOf((*MockWaffelnRepository)(nil).GetWaffelnTotalCount))
 }
+
+// MockFilesRepository is a mock of FilesRepository interface.
+type MockFilesRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockFilesRepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockFilesRepositoryMockRecorder is the mock recorder for MockFilesRepository.
+type MockFilesRepositoryMockRecorder struct {
+	mock *MockFilesRepository
+}
+
+// NewMockFilesRepository creates a new mock instance.
+func NewMockFilesRepository(ctrl *gomock.Controller) *MockFilesRepository {
+	mock := &MockFilesRepository{ctrl: ctrl}
+	mock.recorder = &MockFilesRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFilesRepository) EXPECT() *MockFilesRepositoryMockRecorder {
+	return m.recorder
+}
+
+// CreateStandplanFile mocks base method.
+func (m *MockFilesRepository) CreateStandplanFile(file models.File) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateStandplanFile", file)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateStandplanFile indicates an expected call of CreateStandplanFile.
+func (mr *MockFilesRepositoryMockRecorder) CreateStandplanFile(file any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStandplanFile", reflect.TypeOf((*MockFilesRepository)(nil).CreateStandplanFile), file)
+}
+
+// GetStandplanFiles mocks base method.
+func (m *MockFilesRepository) GetStandplanFiles() ([]models.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStandplanFiles")
+	ret0, _ := ret[0].([]models.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStandplanFiles indicates an expected call of GetStandplanFiles.
+func (mr *MockFilesRepositoryMockRecorder) GetStandplanFiles() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStandplanFiles", reflect.TypeOf((*MockFilesRepository)(nil).GetStandplanFiles))
+}
