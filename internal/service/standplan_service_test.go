@@ -110,10 +110,11 @@ func TestGetStandplan(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockWaffelnRepo := mocks.NewMockWaffelnRepository(ctrl)
 			mockStandplanRepo := mocks.NewMockStandplanRepository(ctrl)
+			mockFilesRepo := mocks.NewMockFilesRepository(ctrl)
 
 			mockStandplanRepo = tt.before(mockStandplanRepo)
 
-			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo)
+			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo, mockFilesRepo)
 
 			result, err := standplanSvc.GetStandplan()
 
@@ -203,10 +204,11 @@ func TestCreateShiftAssignment(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockWaffelnRepo := mocks.NewMockWaffelnRepository(ctrl)
 			mockStandplanRepo := mocks.NewMockStandplanRepository(ctrl)
+			mockFilesRepo := mocks.NewMockFilesRepository(ctrl)
 
 			mockStandplanRepo = tt.before(mockStandplanRepo)
 
-			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo)
+			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo, mockFilesRepo)
 
 			result, err := standplanSvc.CreateShiftAssignment(tt.fields)
 
@@ -258,10 +260,11 @@ func TestUpdateShiftAssignment(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockWaffelnRepo := mocks.NewMockWaffelnRepository(ctrl)
 			mockStandplanRepo := mocks.NewMockStandplanRepository(ctrl)
+			mockFilesRepo := mocks.NewMockFilesRepository(ctrl)
 
 			mockStandplanRepo = tt.before(mockStandplanRepo)
 
-			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo)
+			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo, mockFilesRepo)
 
 			err := standplanSvc.UpdateShiftAssignment(tt.fields)
 
@@ -307,10 +310,11 @@ func TestDeleteShiftAssignment(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockWaffelnRepo := mocks.NewMockWaffelnRepository(ctrl)
 			mockStandplanRepo := mocks.NewMockStandplanRepository(ctrl)
+			mockFilesRepo := mocks.NewMockFilesRepository(ctrl)
 
 			mockStandplanRepo = tt.before(mockStandplanRepo)
 
-			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo)
+			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo, mockFilesRepo)
 
 			err := standplanSvc.DeleteShiftAssignment(tt.fields)
 
@@ -356,10 +360,11 @@ func TestGetWaffelnCount(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockWaffelnRepo := mocks.NewMockWaffelnRepository(ctrl)
 			mockStandplanRepo := mocks.NewMockStandplanRepository(ctrl)
+			mockFileRepo := mocks.NewMockFilesRepository(ctrl)
 
 			mockWaffelnRepo = tt.before(mockWaffelnRepo)
 
-			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo)
+			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo, mockFileRepo)
 
 			result, err := standplanSvc.GetWaffelnTotalCount()
 
@@ -432,10 +437,11 @@ func TestCreateWaffel(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockWaffelnRepo := mocks.NewMockWaffelnRepository(ctrl)
 			mockStandplanRepo := mocks.NewMockStandplanRepository(ctrl)
+			mockFilesRepo := mocks.NewMockFilesRepository(ctrl)
 
 			mockWaffelnRepo, mockStandplanRepo = tt.before(mockWaffelnRepo, mockStandplanRepo)
 
-			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo)
+			standplanSvc := NewStandplanService(mockStandplanRepo, mockWaffelnRepo, mockFilesRepo)
 
 			result, err := standplanSvc.CreateWaffel(testWaffel)
 
