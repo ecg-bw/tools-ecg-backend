@@ -96,7 +96,8 @@ func main() {
 	// Registriere alle OpenAPI v1 Routen
 	standplanRepo := repository.NewStandplanRepository(db)
 	waffelnRepo := repository.NewWaffelnRepository(db)
-	stanplanService := service.NewStandplanService(standplanRepo, waffelnRepo)
+	filesRepo := repository.NewFilesRepository(db)
+	stanplanService := service.NewStandplanService(standplanRepo, waffelnRepo, filesRepo)
 	apiAdapter := handler.NewApiAdapter(stanplanService)
 
 	apiHandler := api.HandlerWithOptions(apiAdapter, api.StdHTTPServerOptions{

@@ -169,7 +169,7 @@ paths:
       summary: Dateien und Dokumente hinzufügen
       description:  Gibt einen ID für das jeweilige Dokument zurück
       operationId: createStandplanFiles
-      equestBody:
+      requestBody:
         required: true
         content:
           application/json:
@@ -180,7 +180,7 @@ paths:
           description: Erfolgreich hinzugefügt
           content:
             application/json:
-              shema:
+              schema:
                 $ref: '#/components/schemas/CreateFilesResponse'
 
 components:
@@ -353,12 +353,20 @@ components:
     CreateFilesRequest:
       type: object
       required:
-        - files
+        - title
+        - description
+        - url
       properties:
-        files:
-          type: object
-          schema:
-            $ref: '#/components/schemas/FileInfo'
+        title:
+          type: string
+          example: "Hygienekonzept 2026"
+        description:
+          type: string
+          example: "Wichtige Richtlinien für die Lebensmittelzubereitung"
+        url:
+          type: string
+          format: uri
+          example: "https://example.com/files/hygiene.pdf"
 
     CreateFilesResponse:
       type: object

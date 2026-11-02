@@ -57,15 +57,47 @@ func (a *ApiAdapter) GetStandplan(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *ApiAdapter) GetStandplanFiles(w http.ResponseWriter, r *http.Request) {
-	if _, err := w.Write(fmt.Appendf([]byte{}, "Get Standplan Files")); err != nil {
-		slog.Error("write GetStandplanFiles: ", "error", err)
+	response := api.FilesResponse{}
+
+	files, err := a.StandplanService.GetStandplanFiles()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get standplan: %v", err), http.StatusInternalServerError)
+		return
 	}
+
+	for _, file := range files {
+		response.Files = append(response.Files, api.FileInfo{
+			Id: file.Id,
+			Title: file.Title,
+			Description: file.Description,
+			Url: file.Url,
+		})
+	}
+
+	sendJSON(w, http.StatusOK, response)
 }
 
 func (a *ApiAdapter) CreateStandplanFiles(w http.ResponseWriter, r *http.Request) {
-	if _, err := w.Write(fmt.Appendf([]byte{}, "Get Standplan Files")); err != nil {
-		slog.Error("write GetStandplanFiles: ", "error", err)
+	var body api.CreateFilesRequest
+	err := decodeJSONBody(r, &body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Invalid request body: %v", err), http.StatusBadRequest)
 	}
+
+	file := models.File {
+		Title: 			body.Title,
+		Description: 	body.Description,
+		Url: 			body.Url,
+	}
+
+	response := api.CreateFilesResponse{}
+
+	response.Id, err = a.StandplanService.CreateStandplanFile(file)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Create Standplan File: %v", err), http.StatusBadRequest)
+	}
+
+	sendJSON(w, http.StatusOK, response)
 }
 
 func (a *ApiAdapter) DeleteShiftAssignment(w http.ResponseWriter, r *http.Request, shiftId int, assignmentId int) {

@@ -23,15 +23,22 @@ type WaffelnRepository interface {
 	CreateWaffel(waffel models.Waffel) (int, error)
 }
 
+type FilesRepository interface {
+	GetStandplanFiles() ([]models.File, error)
+	CreateStandplanFile(file models.File)	(int, error)
+}
+
 type StandplanService struct {
 	StandplanRepo 	StandplanRepository
 	WaffelnRepo 	WaffelnRepository
+	FilesRepo		FilesRepository
 }
 
-func NewStandplanService(standplanRepo StandplanRepository, waffelnRepo WaffelnRepository) *StandplanService {
+func NewStandplanService(standplanRepo StandplanRepository, waffelnRepo WaffelnRepository, filesRepo FilesRepository) *StandplanService {
 	return &StandplanService{
 		StandplanRepo: standplanRepo,
 		WaffelnRepo: waffelnRepo,
+		FilesRepo: filesRepo,
 	}
 }
 
@@ -61,7 +68,15 @@ func (s *StandplanService) GetStandplan() ([]models.Day, error) {
 	}
 
 	return days, nil
-}	
+}
+
+func (s *StandplanService) GetStandplanFiles() ([]models.File, error) {
+	return s.FilesRepo.GetStandplanFiles()
+}
+
+func (s *StandplanService) CreateStandplanFile(file models.File) (int, error) {
+	return s.FilesRepo.CreateStandplanFile(file)
+}
 
 func (s *StandplanService) CreateShiftAssignment(assignment models.ShiftAssignment) (int, error) {
 	// Check if shift exists
