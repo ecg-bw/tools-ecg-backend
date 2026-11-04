@@ -10,6 +10,9 @@ services:
       - DB_USER=user_${STAGE}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=db_${STAGE}
+    volumes:
+      # Mappt den static-Ordner vom Server absolut in den Container nach /app/static
+      - /opt/app/backend/${STAGE}/static:/app/static
     networks:
       - web-network
     labels:

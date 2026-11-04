@@ -90,8 +90,8 @@ func main() {
 	})
 
 	// File Server
-	fileServer := http.FileServer(http.Dir("../../static"))
-    rootMux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	fileServer := http.FileServer(http.Dir("/app/static"))
+	rootMux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
 	// Registriere alle OpenAPI v1 Routen
 	standplanRepo := repository.NewStandplanRepository(db)

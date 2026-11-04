@@ -110,14 +110,14 @@ jobs:
           echo "domain=${TARGET_DOMAIN}" >> $GITHUB_OUTPUT
           echo "Berechnete Domain: ${TARGET_DOMAIN}"
 
-      - name: Transfer Compose File
+      - name: Transfer Files
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "docker-compose.app.yml"
+          source: "docker-compose.app.yml,static"
           target: "/opt/app/backend/${{ needs.build.outputs.stage }}"
 
       - name: Deploy via SSH
