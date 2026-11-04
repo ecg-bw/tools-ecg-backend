@@ -78,20 +78,20 @@ func main() {
 
 	// Swagger Docs & UI
 	openAPISpec := swagger.GetOpenAPISpec()
-	rootMux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
+	rootMux.HandleFunc("GET /api/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/yaml")
 		if _, err = w.Write(openAPISpec); err != nil {
 			slog.Error("write swagger ui: ", "error", err)
 		}
 	})
-	rootMux.Handle("/swagger-ui/", httpSwagger.Handler(httpSwagger.URL("/openapi.yaml")))
-	rootMux.HandleFunc("GET /swagger-ui", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/swagger-ui/", http.StatusMovedPermanently)
+	rootMux.Handle("/api/swagger-ui/", httpSwagger.Handler(httpSwagger.URL("/api/openapi.yaml")))
+	rootMux.HandleFunc("GET /api/swagger-ui", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/api/swagger-ui/", http.StatusMovedPermanently)
 	})
 
 	// File Server
 	fileServer := http.FileServer(http.Dir("/app/static"))
-	rootMux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	rootMux.Handle("/api/static/", http.StripPrefix("/api/static", fileServer))
 
 	// Registriere alle OpenAPI v1 Routen
 	standplanRepo := repository.NewStandplanRepository(db)
@@ -101,7 +101,7 @@ func main() {
 	apiAdapter := handler.NewApiAdapter(stanplanService)
 
 	apiHandler := api.HandlerWithOptions(apiAdapter, api.StdHTTPServerOptions{
-		BaseURL:    "/v1",
+		BaseURL:    "/api/v1",
 		BaseRouter: rootMux,
 	})
 
