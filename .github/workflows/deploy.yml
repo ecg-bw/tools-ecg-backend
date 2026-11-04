@@ -1,6 +1,11 @@
 name: CI/CD Pipeline
 
 on:
+  pull_request:
+    branches:
+      - main
+      - qa
+      - dev
   push:
     branches:
       - main
@@ -14,7 +19,25 @@ env:
   BASE_DOMAIN: ${{ vars.BASE_DOMAIN }}
 
 jobs:
+  go-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          install-mode: goinstall
+
+
   test:
+    needs: go-lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -25,6 +48,8 @@ jobs:
           echo "Running tests..."
           # Hier können Sie Ihre Testbefehle einfügen, z.B.:
           go test ./...
+          go mod tidy
+          git diff --exit-code go.mod go.sum
           echo "Tests completed."
 
   build:
@@ -63,6 +88,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: ${{ needs.build.outputs.stage }}
     steps:
@@ -84,14 +110,14 @@ jobs:
           echo "domain=${TARGET_DOMAIN}" >> $GITHUB_OUTPUT
           echo "Berechnete Domain: ${TARGET_DOMAIN}"
 
-      - name: Transfer Compose File
+      - name: Transfer Files
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_HOST }}
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "docker-compose.app.yml"
+          source: "docker-compose.app.yml,static"
           target: "/opt/app/backend/${{ needs.build.outputs.stage }}"
 
       - name: Deploy via SSH
