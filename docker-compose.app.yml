@@ -18,7 +18,7 @@ services:
 
       # Neue Router-Regel: Horcht auf api.${DOMAIN}
       - "traefik.http.routers.backend-${STAGE}.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend-dev-api.middlewares=strip-api-prefix"
+      - "traefik.http.routers.backend-${STAGE}.middlewares=strip-api-prefix"
       - "traefik.http.middlewares.strip-api-prefix.stripprefix.prefixes=/api"
       - "traefik.http.routers.backend-${STAGE}.entrypoints=websecure"
       - "traefik.http.routers.backend-${STAGE}.tls=true"
