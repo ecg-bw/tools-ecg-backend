@@ -10,6 +10,9 @@ services:
       - DB_USER=user_${STAGE}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=db_${STAGE}
+    volumes:
+      # Mappt den static-Ordner vom Server absolut in den Container nach /app/static
+      - /opt/app/backend/${STAGE}/static:/app/static
     networks:
       - web-network
     labels:
@@ -17,8 +20,11 @@ services:
       - "traefik.docker.network=web-network"
 
       # Neue Router-Regel: Horcht auf api.${DOMAIN}
-      - "traefik.http.routers.backend-${STAGE}.rule=Host(`api.${DOMAIN}`)"
+      - "traefik.http.routers.backend-${STAGE}.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
+      # - "traefik.http.routers.backend-${STAGE}.middlewares=strip-api-prefix"
+      # - "traefik.http.middlewares.strip-api-prefix.stripprefix.prefixes=/api"
       - "traefik.http.routers.backend-${STAGE}.entrypoints=websecure"
+      - "traefik.http.routers.backend-${STAGE}.tls=true"
       - "traefik.http.routers.backend-${STAGE}.tls.certresolver=myresolver"
       - "traefik.http.services.backend-${STAGE}.loadbalancer.server.port=8080"
     mem_limit: 60m
