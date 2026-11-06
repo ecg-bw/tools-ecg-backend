@@ -35,6 +35,12 @@ type StandplanService struct {
 	FilesRepo		FilesRepository
 }
 
+const (
+	daysUntilMedium float64  = 5
+	daysUntilHigh float64 = 2
+	saturationLimit float64 = 0.7
+)
+
 func NewStandplanService(standplanRepo StandplanRepository, waffelnRepo WaffelnRepository, filesRepo FilesRepository) *StandplanService {
 	return &StandplanService{
 		StandplanRepo: standplanRepo,
@@ -64,6 +70,7 @@ func (s *StandplanService) GetStandplan() ([]models.Weekend, error) {
 				return nil, fmt.Errorf("failed to get assignments for shift with id %d: %v", shift.Id, err)
 			}
 			shifts[j].Assignments = &assignments
+			shifts[j].CriticalFlag = calculateCriticalFlag(shift)
 		}
 		days[i].Shifts = shifts
 	}
@@ -183,4 +190,23 @@ func IsSameWeekend(d1, d2 time.Time) bool {
 	sat2 := getSaturday(d2)
 
 	return sat1.Equal(sat2)
+}
+
+func calculateCriticalFlag(shift models.Shift)  int {
+	var saturation float64
+	if shift.Assignments == nil {
+		saturation = 0
+	} else if shift.RequiredSlots <= 0 {
+		saturation = 1
+	} else {
+		saturation = float64(len(*shift.Assignments)) / float64(shift.RequiredSlots)
+	}
+	hoursUntil := time.Until(shift.StartTime).Abs().Hours()
+
+	if saturation < saturationLimit && hoursUntil < daysUntilMedium * 24 {
+		return 1 // medium - orange
+	} else if saturation < saturationLimit && hoursUntil < daysUntilHigh * 24 {
+		return 2 // high - red
+	}
+	return 0 // low
 }
