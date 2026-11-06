@@ -70,7 +70,7 @@ func (s *StandplanService) GetStandplan() ([]models.Weekend, error) {
 				return nil, fmt.Errorf("failed to get assignments for shift with id %d: %v", shift.Id, err)
 			}
 			shifts[j].Assignments = &assignments
-			shifts[j].CriticalFlag = calculateCriticalFlag(shift)
+			shifts[j].CriticalFlag = calculateCriticalFlag(shift, day)
 		}
 		days[i].Shifts = shifts
 	}
@@ -192,7 +192,7 @@ func IsSameWeekend(d1, d2 time.Time) bool {
 	return sat1.Equal(sat2)
 }
 
-func calculateCriticalFlag(shift models.Shift)  int {
+func calculateCriticalFlag(shift models.Shift, day models.Day)  int {
 	var saturation float64
 	if shift.Assignments == nil {
 		saturation = 0
@@ -201,12 +201,14 @@ func calculateCriticalFlag(shift models.Shift)  int {
 	} else {
 		saturation = float64(len(*shift.Assignments)) / float64(shift.RequiredSlots)
 	}
-	hoursUntil := time.Until(shift.StartTime).Abs().Hours()
+	hoursUntil := time.Until(time.Date(day.Date.Year(), day.Date.Month(), day.Date.Day(), 
+		shift.StartTime.Hour(), shift.StartTime.Minute(), shift.StartTime.Second(), 
+		shift.StartTime.Nanosecond(), day.Date.Location())).Abs().Hours()
 
-	if saturation < saturationLimit && hoursUntil < daysUntilMedium * 24 {
-		return 1 // medium - orange
-	} else if saturation < saturationLimit && hoursUntil < daysUntilHigh * 24 {
+	if saturation < saturationLimit && hoursUntil < daysUntilHigh * 24 {
 		return 2 // high - red
+	} else if saturation < saturationLimit && hoursUntil < daysUntilMedium * 24 {
+		return 1 // medium - orange
 	}
 	return 0 // low
 }
