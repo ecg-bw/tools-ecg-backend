@@ -241,6 +241,7 @@ func mapShiftToDTO(shift models.Shift) api.Shift {
 		EndTime:       shift.EndTime.Format(time.TimeOnly),
 		RequiredSlots: shift.RequiredSlots,
 		Description:   *shift.Description,
+		CriticalFlag:  shift.CriticalFlag,
 	}
 	return shiftDTO
 }

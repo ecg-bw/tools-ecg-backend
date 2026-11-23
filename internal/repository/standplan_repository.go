@@ -29,7 +29,7 @@ const (
 
 	getShiftAssignmentsByShiftIdQuery = "SELECT * FROM shift_assignments WHERE shift_id = $1"
 
-	getAllDaysQuery = "SELECT id, date FROM days"
+	getAllDaysQuery = "SELECT id, date FROM days order by date"
 
 	getAllShiftsByDayIdQuery = "SELECT * FROM shifts WHERE day_id = $1 ORDER by start_time, end_time"
 
