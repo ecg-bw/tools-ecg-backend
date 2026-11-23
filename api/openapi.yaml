@@ -235,6 +235,7 @@ components:
         - endTime
         - required_slots
         - description
+        - criticalFlag
         - shift_assignments
       properties:
         id:
@@ -257,6 +258,9 @@ components:
         description:
           type: string
           example: "Waffeln backen und Teig nachfüllen"
+        criticalFlag:
+          type: integer
+          example: 1
         shift_assignments:
           type: array
           items:

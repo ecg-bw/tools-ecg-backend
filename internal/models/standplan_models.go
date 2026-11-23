@@ -17,6 +17,7 @@ type Shift struct {
 	EndTime 		time.Time
 	RequiredSlots 	int
 	Description 	*string
+	CriticalFlag	int
 	Assignments 	*[]ShiftAssignment
 }
 
