@@ -18,14 +18,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web-network"
-
-      # Neue Router-Regel: Horcht auf api.${DOMAIN}
       - "traefik.http.routers.backend-${STAGE}.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)"
-      # - "traefik.http.routers.backend-${STAGE}.middlewares=strip-api-prefix"
-      # - "traefik.http.middlewares.strip-api-prefix.stripprefix.prefixes=/api"
-      - "traefik.http.routers.backend-${STAGE}.entrypoints=websecure"
-      - "traefik.http.routers.backend-${STAGE}.tls=true"
-      - "traefik.http.routers.backend-${STAGE}.tls.certresolver=myresolver"
+      - "traefik.http.routers.backend-${STAGE}.entrypoints=web"
       - "traefik.http.services.backend-${STAGE}.loadbalancer.server.port=8080"
     mem_limit: 60m
 
